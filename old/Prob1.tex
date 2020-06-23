@@ -1,0 +1,1972 @@
+\documentclass[ 11pt,%
+				a4paper,% 
+				twoside,% 
+				headinclude,% 
+				footinclude = true,% 
+				cleardoublepage = empty,% 
+				reqno]{scrbook}
+
+
+
+\input{packages}
+\input{format_specs}
+\input{math_specs}
+
+% Hide subsections from TOC.
+% \setcounter{tocdepth}{1}
+
+\raggedbottom
+\allowbreak
+\sloppy
+
+
+
+
+
+
+\begin{document}
+
+
+\pagenumbering{roman}
+
+\begin{titlepage}
+    \vspace*{9em}{\centering\Huge\usefont{T1}{qzc}{m}{it}
+Basics of Probability\par}
+\vspace{1em}
+{\hfill\itshape Very short introduction}
+\clearpage
+    \vspace*{\fill}\hfill   \parbox{.4\textwidth}{
+    \raggedleft
+\scriptsize These notes are a summary version of many  \emph{Tanvir!}?
+}
+\end{titlepage}
+
+\begingroup
+\hypersetup{linkcolor=gainsboro!60!black}
+\tableofcontents
+\endgroup
+\frontmatter
+
+
+\pagenumbering{arabic}
+\setcounter{chapter}{3}
+\mainmatter
+\chapter{Estimation}
+
+
+
+So far we have been talking mostly about \emph{probability theory}, in particular different objects like \textit{probability space, random variables, distributions, types of distributions, moments and so on...}. %
+%\marginnote{Recall, a random variable $X$ is a function which takes its input from the sample space but gives output in the Real line. With a little bit less rigor we can write $X:\Omega \to \mathbb{R}$. Where $\Omega$ is the sample space, to be specific we can also write $X(\omega)$ }%
+%
+But we will now start with a different journey, and this will take us to actual realm of \emph{statistics} or more properly we can say \emph{statistical inference}. In many ways these two fields are related but soon you will realize the goals are very different. While the objective of probability theory is to describe and investigate mathematical models of random phenomena, primarily from a theoretical point of view, the goal of statistical inference however is, to propose methods and principles so that from a real world data we can learn about some aspects of the random phenomena that generated the data. So loosely, if probability explains \emph{what is a random variable}, \emph{how we can think about a random variable and ``ideally'' what data sets one might have from some random variables with the way we have defined}, in statistical inference we come to real world, \emph{we collect the data and model some unknown but useful quantities and then try to guess it with the data}. Since a picture is worth of thousand words, you can try to think the interplay between these two areas as following,
+
+
+
+\vspace*{.5cm} 
+
+
+\begin{figure}[H]
+
+\tikzstyle{mybox} = [draw = red!10!black, fill=gray!8, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=12pt]
+\tikzstyle{title} =[fill=white, text=black, rounded corners]
+
+\begin{tikzpicture}
+\tikzset{-{{To}[length=1.3mm,line width=1.3pt]}, auto, 
+    state/.style ={circle, draw, minimum width = 0.1 cm, scale=0.9},
+    point/.style = {circle, draw, inner sep=0.02cm,fill,node contents={}},
+    bidirected/.style={Latex-Latex,dashed},
+    hidden/.style={dashed}
+    }
+\footnotesize
+\itshape
+\node [mybox] at (0,0) (dgp){%
+    \begin{minipage}{0.30\textwidth}
+    \raggedright data generating process of random variables $X_1, X_2,\ldots, X_n$
+    \end{minipage}
+};
+
+\node [mybox] at (8,0) (data){%
+    \begin{minipage}{0.30\textwidth}
+    \raggedright realizations $x_1, x_2, \ldots, x_n$, i,e., observed data.
+    \end{minipage}
+};
+
+% \node[title, right=10pt] at (pt.north west) (ptt) {\textit{\textbf{ Probability Theory}}};
+
+\node[title, right=10pt] at (2, 2) (pt) {\textbf{ Probability Theory}};
+
+
+
+% \node[title, right=10pt] at (st.north west) (stt) {\textit{\textbf{ Statistical Inference}}};
+
+\node[title, right=10pt] at (2, -2) (st) {\textbf{ Statistical Inference}};
+
+\path (dgp) edge[bend left=30, dashed, thick, black] (data);
+\path (data) edge[bend left=30, dashed, thick, black] (dgp);
+
+
+
+
+% \node[title, rounded corners] at (box.east) {$\clubsuit$};
+\end{tikzpicture}%
+	\caption{Interplay between Probability theory and Statistical Inference}
+\end{figure}
+
+
+
+
+\section{Three Approaches: Two Examples}
+\addcontentsline{toc}{section}{Three Approaches: Two Examples}
+
+So in statistical inference we are primarily interested to answer following question- 
+
+\begin{longfbox}[
+  border-style=none,
+  margin-right=2em,
+  margin-left=4em,
+  border-left-style=solid,
+  border-left-width=3pt,
+  border-color=gray, 
+  padding-left=1ex]
+
+\textit{Given a data set how can one uncover its underlying probability distribution from a number of random observations?}
+\end{longfbox}
+
+
+% \begin{longfbox}[ 
+%   margin-right=4em,
+%   margin-left=4em,
+%   padding=1em,
+%   background-color=white,
+%   background-clip=padding-box,
+%   border-width=2pt, 
+%   border-bottom-width=1pt,
+%   %border-radius=15pt,
+%   %border-top-left-radius=30pt,
+%   %border-left-width=8pt,
+%   border-left-color=gray,
+%   border-right-style=double,
+% ]
+% A \textsf{longfbox} example. A longfbox can contain much
+% longer content and will by default be as 
+% wide as the current line width. 
+% \end{longfbox}
+
+Maybe the question is not that clear now, so let us embark on this journey with concrete examples. It turns out there are different ways how we can approach to this problem. In the following first we will give two broad examples that will essentially summarize, what we can say perhaps, a standard way to solve a statistical problem. We will mention three different approaches in statistics, or in statistical inference and then after that we will go into more details.
+
+
+\begin{example}[Rotten Apples]~\label{ex:rottenapples}
+
+Suppose an apple seller just received a delivery of $N = 10,000$ apples. It is very natural for him to find out how many of these $N$ apples are already bad. Let us denote the \emph{total number of rotten apples by $r$}. Then the problem is, the seller doesn't know the actual $r$, and his quest is finding this $r$. What he could do is, he could go to each and every apple one by one and check whether each one is good or bad, right?. But the apple seller is a busy man and he realized this is madness! So he came up with a clever idea, that we now call \emph{sampling}. So he collects a sample of $n = 50$ apples. Now assume out of this $n$, the total number of rotten apple is $x = 25$. So $x$ is simply rotten number in the sample The question is \emph{can the seller say something about $r$ from the rotten number $x$ that he could observe from sample?} We will say, YES! he can, let us explain how,
+
+\marginnote{"$\approx $" means approximately equal}
+\marginbreak{30pt}
+\marginnote{Note we did not explain how the seller does his sampling. In general sampling can be done in different ways, we will come back to this issue shortly!}
+\marginbreak{150pt}
+
+
+\marginnote{
+
+In particular if a box contains $r$ red balls and $N-r$ blue
+balls (so total $N$ balls), and we select $n \geq 0$ balls randomly without replacement, then if we let $X$ to denote the number of red balls that are obtained. The distribution of $X$ is said to follow hypergeometric distribution with pmf
+
+\begin{align*}
+&f(x | r, N-r, n)=\\
+&\quad\frac{\left(\begin{array}{l}
+r \\
+x
+\end{array}\right)\left(\begin{array}{c}
+N-r \\
+n-x
+\end{array}\right)}{\left(\begin{array}{c}
+N \\
+n
+\end{array}\right)}
+\end{align*}
+
+
+for $\max \{0, n-N\} \leq x \leq \min \{n, N-r\}$. And we write $X \sim \mathcal{H}_{n ; r, N-r}$.
+
+}
+
+
+
+\textbf{\emphh{\S. Approach 1: Simple ratio calculation}}
+
+         The simple solution could be if we think - \textit{the proportion of bad apples in the sample is perhaps close to the proportion of bad apples in the total delivery}, in other words we can think 
+
+         \begin{align*}
+             x / n \approx r / N .
+         \end{align*}
+
+         This lead us to think that perhaps $r \approx N \times x/n$. That is, the number ${R(x) := N \times (x / n)}$ (or more precisely, the nearest integer of this number) is a natural \emph{estimate} of the actual rotten number $r$. Note, we do not know the actual number $r$, so we used this technique what in statistics we call \emph{estimation}. So in principle we have come up with a mapping (or a function) $R$ that assigns to the observed value $x$ to an estimate $R(x)$. In statistics such mapping $R$ is called an \emph{estimator}. Later we will formally define what is an estimator but roughly this is a function of the data.
+
+         Notice $x$ is a random quantity. Why? If the seller would pick a different sample of the same size $n$, then it is very likely that the number of rotten apples $x$ in that particular sample would be different than this one. So each sample will give us a different estimate. 
+
+\textbf{\emphh{\S. Approach 2: Calculation with a confidence}}
+
+        The first approach is a bit crude one, it just gives us ``one'' number, now as we have already stated that \emph{different sample will give us different number}, this should give us a sign that maybe just one number is not so reliable. So here is another option, we might go for a probabilistic answer, so that given an observed value $x$ we do not guess a particular value $R(x)$, rather we try to find an interval $C(x)$ (which is a function of $x$ as well), such that the true value $r$ will be within this interval. So for example the interval could be $C(x) =(x-\delta, x+ \delta), \delta>0)$ then with our estimated interval $C(x)$ we would like to have 
+
+        \begin{align}\label{eqn:ci}
+            P(x: r \in C(x)) \approx 1
+        \end{align}
+
+
+        \textit{in words}, we would like to have the probability of being $r$ in the interval that we have constructed using the sample is close to $1$. Note, again, since $x$ is random, it is natural that $C(x)$ will also also random. So if the probability calculation in \cref{eqn:ci} is a correct one and the interval that we have constructed is not that wide, so this means our estimate is not bad! Based on the description of this problem, we can \emph{assume} that $x$ is a realization of the random variable $X$ which follows hypergeometric distributions $\mathcal{H}_{n ; r, N-r}$, then the probability calculation in \cref{eqn:ci} could be carried out with the pmf of $X$.But note where $N, n$ are known parameters bur $r$ is an \emph{unknown} parameter. So we do not know the exact probability distribution, but we can at least think about what class/family we might want to use. We will come back to this point again when we discuss \emph{statistical modeling}.
+
+
+         
+
+\textbf{\emphh{\S. Approach 3: Making a decision}}
+
+    Now suppose the seller is not thinking about the exact number or a number with a probability, rather he is thinking about two decisions, that is whether the delivery is good or bad. So he thought \emph{if the rotten number of apples in the total is below $5\%$, then it is fine, but if it is above $5\%$, then it is problematic}, since in our example $N = 10,000$, it means he has to decide between two statements, 
+
+    \begin{itemize}
+        \item[] - all options for $r$ are fine when $r \in\{0, \ldots, 500\}$.
+
+        \item[] - none of the options worth looking when $r \in\{501, \ldots, 10000\}$.
+    \end{itemize}
+
+\marginnote{Note, A hypothesis is a statement about a population parameter. The goal of a hypothesis test is to decide, based on a sample from the population, which of two complementary hypotheses is true}
+
+     Note, this way of looking at the problem is slightly different than the first two, essentially what we are doing in this case is \emph{we are looking at all possible values $r$ can take and then divide the range of possible values in two parts}, an acceptable part, and and unacceptable part. In statistics these statements that lead us to two decisions are called ``hypotheses'' (singular `hypothesis'). So we can write.
+
+    \begin{itemize}
+        \item[] - the 'null hypothesis' $H_{0}: r \in\{0, \ldots, 500\}$.
+
+        \item[] - and the 'alternative' $H_{1}: r \in\{501, \ldots, 10000\}$
+    \end{itemize}
+
+So if the seller fails to reject the null hypothesis then the delivery is good, but if he rejects the null then the delivery is bad. Now the question is how can the seller take the decision based on the sample value $x$? The answer is \emph{the seller has to also find what we say a \textbf{decision rule} of the following type},
+
+\begin{itemize}
+    \item $x \leq c \Rightarrow$ the seller supports the null hypothesis, i.e., 'the delivery is good'.
+
+    \item $x>c \Rightarrow$ he takes the alternative, that is the delivery is bad.
+\end{itemize}
+
+    
+Well we are not done yet!, how to find $c$?, We can find $c$ probabilistically using following idea.
+
+\begin{itemize}
+  \item[]  - We want to make $P(x: x>c)$ (i.e., the probability of the delivery is bad) is small when $r \leq 500$, why? Because  if we mistakenly conclude that the delivery of apple is a bad one, where in reality it was good, then the seller just concluded wrong. So we minimize this mistake.
+
+  \item[] - and simultaneously we want to make $P( x : x > c )$ is large when $r > 500$. This means when actually our decision is correct, that is the delivery is truly bad, we want this probability to be large.
+\end{itemize}
+
+Finding a decision rule of this type is known as \emph{testing}. Clearly we need use the distribution of $X$, so we can use hypergeometric distribution $\mathcal{H}_{n ; r, N-r}(x: x>c)$.
+
+
+
+% \[
+
+% \]
+% for the true $r$ and the right probability measure $P_{r} .$ Now, the sample taken by the orange importer corresponds to drawing $n$ balls without replacement from an urn containing $r$ red and $N-r$ white balls; thus the number of rotten oranges in the sample has the hypergeometric distribution $P_{r}=\mathcal{H}_{n ; r, N-r} .$ However, the true value
+% $r($ the number of rotten oranges) is unknown. After all, it is supposed to be deduced from the sample $x !$ So the properties of $C(x)$ cannot depend on $r .$ This leads to the requirement that
+
+
+\end{example}
+
+
+In this chapter we will try to explain the first two approaches in the last example. The first approach with just one number as our estimate of the unknown quantity is called \emph{point estimation}, the second one where we come up with an interval is called \emph{interval estimation} and the third one is called \emph{hypothesis testing}. 
+
+Let us look at another example, and then we go to some details regarding point estimation
+
+
+\begin{example}[Pipe strengths]~\label{ex:pipestrength}
+
+Suppose in a power station we would like to have an idea about the strength of the pipe when the pipe gets heated. So the more strength the pipe has, it will last longer. So in a process where different pipe gets heated, we managed to observe $n$ of such pipes and collected $n$ independent measurements of brittleness in heat. Let us denote this $n$ (random) measurements with $x_{1}, \ldots, x_{n}$. For the moment we will simply assume each of this measurements are realizations of a random variables which are normally distributed. So $X_1, \ldots, X_n$ are the random variables that are mutually independent and follow the same distribution that is normal with \emph{unknown mean} $E(X_i) = m, \, \forall i$ but with \emph{known} variance. Now the way we would like to model the real brittleness is, we can think of the real brittleness as $m$. So the real brittleness is an expectation of the random variable, but that is unknown to us. Now, the aim is to determine $m$ from the observed point $x=\left(x_{1}, \ldots, x_{n}\right) \in \mathbb{R}^{n}$. So here $x$ is a $n$ dimensional vector. Again, a statistician can proceed in one of the following three ways:
+
+\marginnote{Note, we made several assumptions in this example. First, we \emph{assumed} normality. In practice there could be justifications behind this maybe because of our knowledge and prior experience with similar data sets. But the data possibly could have also come from other distributions. Then our normality assumption is wrong. Also note, we assumed the realizations are independent. This is again assumption, maybe in many cases valid, but many cases maybe not.}
+
+\textbf{\emphh{\S. Approach 1: Point Estimation}}
+
+     The first idea that comes to mind is to use the average of the $n$ independent measurements, so we simply calculate
+
+    \begin{align*}
+        \bar{x}:=\frac{1}{n} \sum_{i=1}^{n} x_{i}
+    \end{align*}
+
+    Note, again like previous example, $\bar{x}$ is random because the observed data $x$ is random. Different data will give us different $\bar{x}$, so it depends on the data. Sometimes for notational clarity we will write $\bar{x}_n$, but you should ALWAYS remember that this depends on $n$. Different data with same size of $n$ will give us different $\bar{x}$, and moreover changing $n$ will give us different $\bar{x}$ too.  So then it means we can write it as a function $M$, where for this data set $M(x) := \bar{x}$. The value of the function changes with the data set. Here $M$ is an \emph{estimator}, that is a function of the data. This sample mean $M(x)$ might be a good guess but again as as we have discussed before, this estimate is subject to chance, so we cannot trust it too much.
+
+
+\textbf{\emphh{\S. Approach 2: Interval Estimation}}
+
+    Now like the previous example we can determine an interval $C(x)$ depending on $x$, for instance of the form $C(x)=( M(x)-\varepsilon, M(x)+\varepsilon)$ which contains the true value $m$ with sufficient confidence/probability. 
+
+    \begin{align*}
+        P(C(\cdot) \ni m) \geq 1-\alpha
+    \end{align*}
+
+    for some (small) $\alpha>0$ and true $m$. But note this time because of normality assumption this probability can also be calculated using normal distribution, we will explore this in detail in coming sections.
+
+
+\textbf{\emphh{\S. Approach 3: Hypothesis Testing}}
+     
+    Finally again we can go for taking decisions. Maybe we would like to decide whether the brittleness of the pipe remains below the threshold $m_{0}$. If yes we are fine, if not then we have a problem. So again then in theory this means, we can separate the whole range of possible $m$ values in two parts. Then we need to find a decision rule such that 
+
+    \begin{align*}
+    M(x) &\leq c \Rightarrow \text { decision for the null hypothesis } H_{0}: m \leq m_{0},  \\
+    M(x)&>c \Rightarrow \text { decision for the alternative } H_{1}: m>m_{0},
+    \end{align*}
+   
+
+
+    for an appropriate threshold level $c$. And we should choose $c$ such that
+
+    \begin{align*}
+        \{P(M>c) \text { for } m \leq m_{0}\} \text{ is small }\quad \text{ and } \quad \{P(M>c) \text{ for } m > m_{0}\} \text{ is large }
+    \end{align*}
+    
+
+    So if we set a small $\alpha>0$, then we can find $c$ such that $P(M>c) \leq \alpha$ for  $m \leq m_{0}$. Again, making $P(M>c) \text { for } m \leq m_{0}$ small means, we would like to avoid the situation as much as we can when the pipe is good bur we declared it corrupt, and on the other hand the second condition $P(M>c) \text{ for } m > m_{0}$ means, we want to make sure that a bad pipe will be recognized with a probability as large as possible. 
+
+
+
+\end{example}
+
+\section{General Structure of Data and Modeling}
+
+If you notice carefully there is a general patterns in the examples that we just discussed, let us know explore these patters and discuss the methods in detail.
+
+
+\subsection{The data: outcome of an experiment}
+
+    We received a piece of a data, in the first example $x$ (the amount of rotten apples) and in the second example $x = (x_1, x_2, \ldots, x_n)$ ($n$ measurements). If you think carefully appearing of one data set can be thought of a realization an experiment, where the experiment is simply \emph{``collecting the data''}. So hypothetically every time we go and collect a data from somewhere we perform an experiment and there is a sample space of this experiment, that is the set of all possible data we might get in theory. We can write all possible data in a set amd we will denote this with $\mathcal{X}$. 
+
+\begin{example}[Sample spaces in \cref{ex:rottenapples} and \cref{ex:pipestrength}]
+
+  For the first example different trials will give us different $x$ (i.e., different number of rotten apples). So here the set of the possible number of rotten apples is $\{0, \ldots, n\}$ and it is the \emph{sample space} of this experiment. So we can write  $\mathcal{X}=\{0, \ldots, n\}$. In the second example, our experiment has given us a data $x_1, x_2, \ldots, x_n$. Again you can think in theory ``any'' random data $x_1, x_2, \ldots, x_n$ might be observed. So there is a set of all possible combinations of $x_1, x_2, \ldots, x_n$, i.e., ${\{(x_1, x_2, \ldots, x_n): x_1, x_2, \ldots, x_n)\in \mathbb{R}^n\}}$. In this case we can write $\mathcal{X}=\mathbb{R}^{n}$. So bottom line, there is a set of all possible outcomes of the data, we denote this with $\mathcal{X}$. Below is a vis
+\end{example}
+
+
+  If we now think in terms of event spaces (i.e., $\sigma$-algebra over $\mathcal{X}$), we can write $(\mathcal{X}, \mathscr{F})$, where $\mathcal{X}$ is the our sample space induced from the experiment and $\mathscr{F}$ is a sigma algebra on it where we can assign probabilities. What about the probability distribution (measure)? 
+
+
+\subsection{The family of distributions and statistical model: a choice}
+
+
+    Note that there is a probability distribution $P$ which describes how the data is distributed, or in other words how the elements in $\mathcal{X}$ are distributed. As we have discussed at the beginning \emph{our goal is to know this distribution of the data or sometimes maybe to know just the parameters which will identify this distribution generated the data}. For example in \cref{ex:rottenapples} if true $r = 350$, at least in theory, we would like to know this value. Then again in \cref{ex:pipestrength}, if true $m = 100$, we would like to know about it. Now we explain the systematic process to search for this value. 
+
+\begin{example}[Probability distributions in  \cref{ex:rottenapples} and \cref{ex:pipestrength}]
+
+Actually we have already taken a step in the example. Recall in the examples we have restricted ourselves to only a certain class or family of distributions. In \cref{ex:rottenapples} we fixed ourselves with class of \emph{hypergeometric} distribution. This means we are only looking at the hypergeometric distributions. We don't know all parameters but at least we have now restricted our search. Then \cref{ex:pipestrength} we have assumed $X_1, X_2, \dots, X_n$ are all distributed with ``identical'' distribution, that is \emph{normal}. And because we have assumed independence, knowing for just one $X_i$ will give us the joint distribution.
+  
+\end{example}
+
+This means we are to look for the possible distribution that generated the data, we limit ourselves only within certain family or class of distributions. Sometimes this family of distributions, denoted by $\mathcal{P}$ is called the \emph{model} (we will explain model shortly!). But how do we describe this family of distributions. The assumption is we will characterize each of the distributions with its parameters. So for example we will write $\mathcal{P}=\left\{P_{\theta}: \theta \in \Theta\right\}$. Where $\Theta$ is a parameter space and often the assumption is $P_{\theta}$ is fully characterized by $\theta$. It could be that $\theta$ is a vector. 
+
+\begin{example}[Parameter spaces in \cref{ex:rottenapples} and \cref{ex:pipestrength}]
+
+We can now look at the parameter space and the family of distributions in our two examples. In \cref{ex:rottenapples} $\Theta = \{1, \ldots, 10000\}$. Then our family of distributions is ${\mathcal{P}=\left\{\mathcal{H}_{r}: r \in \Theta\right\}}$, where we omitted other parameters because we already know them. In \cref{ex:pipestrength}, maybe we can subset of $\mathbb{R}$ to be $\Theta$ and then the family of normal distributions are indexed by the expectations which will take value in this subset of $\mathbb{R}$. Note, technically there are more than one parameters in both of the two classes of distributions, but by assumption we already know other parameters, so we can index the family with just one parameter, that is unknown to us. But in general that the family is indexed by vector of parameters, not scalers only.
+\end{example} 
+
+
+Now we join the pieces together, these three elements, the set $\mathcal{X}$, a $\sigma$-algebra $\mathcal{F}$ on it and a class of probability distributions $\mathcal{P}=\left\{P_{\theta}: \theta \in \Theta\right\}$ indexed by parameters, together is called a statistical model.
+
+\begin{definition}[Statistical Model]
+ A statistical model is a triple $\left(\mathcal{X}, \mathscr{F}, \mathcal{P}\right)$ consisting of a sample space $\mathcal{X},$ a $\sigma$ -algebra $\mathscr{F}$ on $\mathcal{X},$ and a class $\mathcal{P}:=\left\{P_{\vartheta}: \vartheta \in \Theta\right\}$ of (at least two) probability distributions on $(\mathcal{X}, \mathscr{F}),$ which are indexed by an index set $\Theta$.
+    
+\end{definition}
+
+ 
+
+
+Other well known terminology of \emph{statistical model} is \emph{statistical experiment}. Since we have to deal with entire class or many (at least two) different probability distributions, we must indicate the respective probability distribution when talking about them. We will denote the distribution corresponding to any particular parameter value $\vartheta$ by $P_{\vartheta}$. Expectations calculated under the assumption that $X \sim P_{\vartheta}$ ($X$ maybe a random variable or a random vector) will be written $E_{\vartheta}$. Distribution functions will be denoted by $F(\cdot| \vartheta)$, probability mass functions and probability density functions by $f(\cdot| \vartheta)$. However, these and other subscripts and arguments might be omitted where no confusion can arise. For this handout we will assume we have a parametric model. This means our parameter space is a subset of any Euclidean space, in that case, we will assume \emph{either} of the following options.
+
+\begin{itemize}
+  \item All of the $P_{\vartheta}$ in the class are continuous with densities $f(x| \vartheta)$.
+
+  \item[] Or,
+
+  \item All of the $P_{\vartheta}$ are discrete with probability mass function $f(x| \vartheta),$ and there exists a set $\left\{x_{1}, x_{2}, \ldots\right\}$ that is independent of $\vartheta$ such that $\sum_{i=1}^{\infty} p\left(x_{i}, \theta\right)=1$ for all $\vartheta$
+
+\end{itemize}
+
+
+Note we used the same notation for the density and mass functions, but this should be clear from the context whether the random variables in the discussion are discrete or continuous. Although self-evident, it should be emphasized here that the \emph{first basic task of a statistician is to choose the right model!, or in other words the right distribution class}. Because that is all she can choose, other things are given.
+
+
+\subsubsection*{\S. Independent experiments and iid random variables}
+
+Finally we need to mention a special case of the experiment that we have been discussing so far but indirectly, specially in \cref{ex:pipestrength} that is independent experiments. This is possibly one of THE most used assumptions that you will come across, if not the only one. In this case our statistical model becomes easy to handle. Recall, in \cref{ex:pipestrength} or the pipe strength example, we assumed each of the realizations of $x_1, \ldots, x_n$ is an independent realizations of the experiment of collecting a data. When representing this with random variables this means $(x_1, \ldots, x_n)$ are independent realizations of the independent random variables $X_1, \ldots, X_n$. Also we assumed identical distributions for $X_1, \ldots, X_n$. When this is the case we say the random variables $X_1, \ldots, X_n$ are independent and identically distributed random variables, in short \emph{iid} random variables. And a sample is often called a \emph{random sample}. Note, technically speaking a sample can be random even if we do not assume independent experiments that is why there are also other types of random sampling, e.g., simple random sampling which does not assume independent realizations. But in the literature \emph{random sample} often refers to iid experiments or realizations of iid random variables. When we have iid random variables, the joint distribution factored into marginals. So for the real valued random variables, if we denote the cumulative joint distribution function with $F_{X_1, \ldots, X_n| \vartheta}$, then we will have 
+
+\begin{align*}
+F_{X_1, \ldots, X_n}(x_1, \ldots, x_n;\vartheta)= \prod_{i = 1}^{n} F_{X_i}(x_i;\vartheta), \quad \forall\left(x_{1}, \ldots, x_{n}\right) \in \mathbb{R}^{n}  
+ \end{align*} 
+
+This means we can also write the joint density $f\left(x_{1}, \ldots, x_{n};\vartheta\right)$ factored in marginals, 
+
+
+\begin{align*}
+    f\left(x_{1}, \ldots, x_{n};\vartheta\right)=\prod_{i=1}^{n} f\left(x_{i};\vartheta\right)
+\end{align*}
+
+\begin{example}[Sample pdf-exponential]~\label{ex:pdfofrandomsample}
+
+Let $X_{1}, \ldots, X_{n}$ be a random sample from an $Exp(\beta)$ distribution. Specifically, $X_{1}, \ldots, X_{n}$ might correspond to the times until failure (measured in years) for $n$ identical circuit boards that are put on test and used until they fail. The joint pdf of the sample is
+
+\begin{align*}
+  f\left(x_{1}, \ldots, x_{n} ; \beta\right)=\prod_{i=1}^{n} f\left(x_{i} ; \beta\right)=\prod_{i=1}^{n} \frac{1}{\beta} e^{-x_{i} / \beta}=\frac{1}{\beta^{n}} e^{-\left(x_{1}+\cdots+x_{n}\right) / \beta}
+\end{align*}
+
+This pdf can be used to answer questions about the sample. For example, what is the probability that all the boards last more than 2 years? We can compute
+
+
+\begin{align*}
+P\left(X_{1}\right.&\left.>2, \ldots, X_{n}>2\right) \\
+&=\int_{2}^{\infty} \ldots \int_{2}^{\infty} \prod_{i=1}^{n} \frac{1}{\beta} e^{-x_{i} / \beta} d x_{1} \cdots d x_{n} \\
+&=e^{-2 / \beta} \int_{2}^{\infty} \cdots \int_{2}^{\infty} \prod_{i=2}^{n} \frac{1}{\beta} e^{-x_{i} / \beta} d x_{2} \cdots d x_{n} \quad \text{(integrate out $x_1$)}\\
+&=\vdots \quad \text{(integrate out the remaining $x_i$s successively)}\\
+&=\left(e^{-2 / \beta}\right)^{n} \\
+&=e^{-2 n / \beta}
+\end{align*}
+
+
+
+
+If $\beta,$ the average lifelength of a circuit board, is large relative to $n,$ we see that this probability is near $1$. The previous calculation illustrates how the pdf of a random sample defined by \cref{ex:pdfofrandomsample} can be used to calculate probabilities about the sample. Realize that the independent and identically distributed property of a random sample can also be used directly in such calculations. For example, the above calculation can be done like this: 
+
+\begin{align*}
+P\left(X_{1}>\right.&\left.2, \ldots, X_{n}>2\right) \\
+&=P\left(X_{1}>2\right) \cdots P\left(X_{n}>2\right) \text{(independence)}\\
+&=\left[P\left(X_{1}>2\right)\right]^{n} \text{(identical distribution)}\\
+&=\left(e^{-2 / \beta}\right)^{n} \text{(exponential calculation)}\\
+&=e^{-2 n / \beta}
+\end{align*}
+
+\end{example}
+
+The sample observed assuming iid experiments, or a sample from an iid random variables can be thought of a sample from an \emph{infinite population}. Think of obtaining the values of $X_{1}, \ldots, X_{n}$ sequentially. First, the experiment is performed and $X_{1}=x_{1}$ is observed. Then, the experiment is repeated and $X_{2}=x_{2}$ is observed. The assumption of independence in sampling implies that the probability distribution for $X_{2}$ is unaffected by the fact that $X_{1}=x_{1}$ was observed first. "Removing" $x_{1}$ from the infinite population does not change the population, so $X_{2}=x_{2}$ is still a random observation from the same population. When we are sampling is from a finite population, this assumption may not be relevant. A finite population is a finite set of numbers, we do not have infinite population any more, so clearly taking one sample out of the population will affect the probability of the second sample being chosen. We avoid the details here..... 
+
+
+\begin{notation}
+  At this point we would like to clear about some notations that we will use time to time. Technically for a sample of $n$ observations writing $x_1, \ldots, x_n$ is appropriate, so that no confusion arises about whether we have one sample or $n$ samples. However this increases some notational burden, becasue everytime then we need to write this whole vector. Throughout the handout we will try to write $x_1, \ldots, x_n$ whenever we mention $n$ realizations, however sometimes we will specify it simply with $x$ with defininig $x := (x_1, \ldots, x_n)$, then $x$ is an $n$ dimensional vector. We will try to be explicit if we write $x$ when we are discussing about a random vector, so that no confusion can arise.
+\end{notation}
+
+\subsection{Statistics, Estimators: tools for clever statisticians}
+
+Now we have come to crux of this chapter, that is \emph{estimators}. If you have noticed, we started the two examples with some questions, in \cref{ex:rottenapples} the question was finding the number of rotten apples. For this we collected a data (sample) $x$ which is the rotten number, then we devised a function $R(x):=N \times(x / n)$ to estimate the parameter $r$. This function which takes the data and maps into the space where the possible values of the parameter lie, is called an \emph{estimator}. Similarly in \cref{ex:pipestrength}, we wrote $M(x)=\bar{x}:=\frac{1}{n} \sum_{i=1}^{n} x_{i}$, where $x=\left(x_{1}, \ldots, x_{n}\right) \in \mathbb{R}^{n}$. Here $M$ is the function that takes the data as an input and returns a number which is a possible \emph{candidate} for the true parameter $m$. As we have already mentioned $M$ is also an \emph{estimator} for the population mean $m$. An estimator is a special case of a more general function known as \emph{statistic}. Roughly a statistic is a function of the data which returns a possible value in the parameter space. Let us see the formal definitions,
+
+\begin{definition}
+Let $\left(\mathcal{X}, \mathscr{F}, \mathcal{P}\right)$ be a (parametric) statistical model and $(\Sigma, \mathscr{S})$ be an arbitrary event space, then
+
+\begin{itemize}
+    \item[\cdefn{(a)}] Any function $T: \mathcal{X} \rightarrow \Sigma$ that is measurable with respect to $\mathscr{F}$ and $\mathscr{S}$ is called a \emph{statistic}.
+
+    \item[\cdefn{(b)}] If $\tau: \Theta \rightarrow \Sigma$ be a mapping that assigns to each $\vartheta \in \Theta$ to value $\tau(\vartheta) \in \Sigma$ then an \emph{estimator} of $\tau(\vartheta)$ is a statistic $T$ which is constructed to estimate $\tau$. 
+
+
+    % $T_{\tau(\vartheta)}$, where $T_{\tau(\vartheta)}: \mathcal{X} \rightarrow \Sigma$.
+
+    \item[\cdefn{(c)}] The distribution of a statistic $T$ is called the \emph{sampling distribution} of the statistic.
+\end{itemize}
+    
+\end{definition}
+
+
+
+
+
+\begin{remarks}
+
+\begin{itemize}
+    \item[] 
+
+    \item The definition may look a bit abstract, but note a statistic is simply a function of the random variable (or variables) that generated the data, so its again a random variable.
+
+    \item Well! an obvious question is why is the notion of a statistic introduced if it is nothing but a random variable? The reason is that although these two notions are mathematically identical, they are interpreted differently. Intuitively, a random variable describes the uncertainty that we are faced with. By way of contrast, a \emph{statistic} is a mapping \emph{a statistician cleverly constructs} to extract some essential information from the observed data.
+
+
+    \item Why is the notion of an \emph{estimator} introduced if it is the same as a statistic? And why does the definition of an estimator not mention $\tau$ if its related to $T$? Again, this is \emph{because of the interpretation}. An estimator is simply a statistic that is specifically \emph{tailored} for the task of estimating a parameter $\tau $. For example, in \cref{ex:pipestrength} we used the sample mean which is the estimator for the population mean. The idea of an estimator does not need any more formalization because it is always the function of the data as statistic. So whenever in this handout we will mention an estimator, it will be clear from the context which parameter we are interested in. 
+
+    \item To represent the randomness of $T$ we will follow usual convention. We will write $T(X)$ or $T(X_1, \ldots, X_n)$. So in our second example, we could write $T(X_1, \ldots, X_n) = \bar{X}:=\frac{1}{n} \sum_{i=1}^{n} X_{i}$. 
+
+    \item Very important! note, $T(X_1, \ldots, X_n)$ and $T(x_1, \ldots, x_n)$ are both conceptually and notationally different. When we write $T(X_1, \ldots, X_n)$, this means $T$ is a function of the random variables, hence it is also a random variable. But if we write $T(x_1, \ldots, x_n)$ this means we have evaluated this estimator for the particular data $(x_1, \ldots, x_n)$ or a realized value, so this is simply a value (i.e., it is already realized and there is no randomness!). In this case when we have a particular value of any estimator, we call this value \emph{an estimate}. So again, an \emph{estimator} is a random variable, and an \emph{estimate} is a realized value of the estimator.
+
+    \item Finally, note in the definition we used $\tau(\vartheta)$ to represent the parameter that we are interested in. Often it could happen that $\tau(\vartheta) = \vartheta$, on that case we are simply interested in $\vartheta$. Then if the whole parameter space is $\Theta$, the estimator $T$ should also take value on $\Theta$, so in this case we have $T: \mathcal{X} \rightarrow \Theta$. 
+
+
+
+\end{itemize}
+    
+\end{remarks}
+
+
+We end this section with a brief summary of what we have outlined till now, and this gives us more or less a general principle (at least for now) to solve a problem. We call this \emph{thought process of a statistician}. 
+\cref{fig:stat_thinking}~ describes this thought process. A statistician starts with  a unknown quantity $\vartheta$ that she would like to know about using data. So she starts thinking that she could model this unknown quantity as a parameter of a distribution $P_{\vartheta}$. She has to think critically which model to pick, and this lets her to decide the family of distributions. Well now, she is more or less confident that one of the distribution of this family or class has produced the data set she has in her hand, But the statistician does not know exactly which one because she does not know the parameter $\vartheta$. Then after analyzing the structure of $P_{\vartheta}$, the statistician devises a function $T$ which is an estimator of the parameter $\vartheta$ and starts checking whether this was a good assumption or not.
+
+
+
+  \begin{figure}[H]
+\begin{overpic}[width=.6\textwidth]{images/stat_thinking2.jpg}
+ % \put (10,10) {\huge$\displaystyle\gamma$}
+ \put (18,30) {$\mathlarger{\mathlarger{\vartheta}}$}
+ \put (18,18) {\mbox{{\fontsize{20}{30}\selectfont $\color{gray!80!black}\Theta$}}}
+ \put (26,15) {$\mathlarger{T(x)}$}
+ \put (50,5) {$\mathlarger{\mathlarger{\mathlarger{T}}}$}
+ \put (50,45) {$\mathlarger{\mathlarger{\mathlarger{P_{\vartheta}}}}$}
+ \put (70,30) {$\mathlarger{x_1, \ldots, x_n}$}
+ \put (75,18) {\mbox{{\fontsize{20}{30}\selectfont $\color{gray!80!black}\mathcal{X}$}}}
+ % \put (42,32) {\begin{minipage}{6em} {\fontsize{8}{20}\selectfont``Which of the $\vartheta$ does the data come from??...hmm... My guess $T(x_1, \ldots, x_n)$''}\end{minipage}}
+ % \put (32,12) {\textit{Statistician}}
+\end{overpic}%
+\begin{tikzpicture}
+  \node at (1,6.5) {\tikz[cm={-1,0,0,1,(0,0)}]\asymcloud[.24]{fill=gray!10!white,thick};};
+\node at (1.5,6.3) {{\begin{minipage}{8em} \raggedright{\footnotesize{\itshape``Which of the $\vartheta$ does the data come from??...hmm... My guess $T(x_1, \ldots, x_n)$"}}\end{minipage}}};
+ \end{tikzpicture}
+\vspace*{.6cm}
+\caption{Thought process of a statistician}
+\label{fig:stat_thinking}
+\end{figure}
+
+% \begin{overpic}[width=0.8\textwidth,grid,tics=10]{images/sample2.png}
+
+
+
+
+Now that we have discussed what is an estimator and how this helps to find the unknown quantity, we will start focusing on following questions.
+
+\begin{itemize}
+  \item What are the possible methods to find an estimator?
+  \item If we find more than one estimator for a parameter how to evaluate them?
+  \item Are there some principles to find an estimator?
+\end{itemize}
+
+In the following sections we will tackle these questions one by one. But before we dive into the details of estimation we will take a short hiatus on some results related to the sample when we have iid random variables and in particular when we have iid observations from a normal distribution. This is important both for practical reasons and also to see some exact sampling distribution of some estimators. After that we will start with \emph{point estimators} and then \emph{interval estimators}.
+
+\section{Sampling from iid Random Variables}
+
+
+In this short section we collect some results related to \emph{random sampling} (i.e., $x_1, \ldots x_n$ are realizations of iid random variables $X_1, \ldots X_n$). Let us recall the definition of sample mean and variance. So the sample mean from a particular sample is the arithmetic average of the values in that sample, so
+
+\begin{align*}
+  \bar{x}=\frac{x_{1}+\cdots+x_{n}}{n}=\frac{1}{n} \sum_{i=1}^{n} x_{i}
+\end{align*}
+
+This is one particular value, or one number and there is no randomness here. But when we treat this arithmetic average as an average of iid random variables, we get a statistic,
+
+\begin{align*}
+  \bar{X}=\frac{X_{1}+\cdots+X_{n}}{n}=\frac{1}{n} \sum_{i=1}^{n} X_{i}
+\end{align*}
+
+So $\bar{X}$ is a random quantity which is often used as an estimator of the population mean. And then $\bar{x}$ is \emph{one particular} realized value. Similarly the sample variance is the statistic defined by
+
+\begin{align*}
+  S^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}
+\end{align*}
+
+And finally, the sample standard deviation is the statistic defined by $S=\sqrt{S^{2}}$.
+
+
+Since $\bar{X}$ is a random variable, in theory it should have a distribution and there might be a mean and variance. Following theorem is the first result of this kind without assuming any distributions for the random variables $X_1, \ldots, X_n$,
+
+\marginnote{The property that average of the sample mean is the population mean that is written in \cref{thm:samplemean}  is known as \emph{unbiasedness}, we have not formally defined this yet, we will do so in coming sections. But note this is an important property of an estimator.}
+
+
+
+
+
+
+
+
+
+\begin{theorem}[Mean and Variance of $\bar{X}$ and $S^2$]~\label{thm:samplemean}
+
+Let $X_{1}, \ldots, X_{n}$  be iid random variables, follow a common distribution with mean $\mu$ and variance $\sigma^2$, then 
+
+\begin{itemize}
+  \item[(a)] $\mathrm{E}(\bar{X})=\mu$
+
+  \item[(b)] $\operatorname{Var}(\bar{X})=\cfrac{\sigma^{2}}{n}$
+
+   \item[(c)] $E(S^{2})=\sigma^2$
+
+   \item[(b)] $\operatorname{Var} (S^{2})=\cfrac{1}{n}\left(\mu_{4}-\cfrac{n-3}{n-1} \mu_{2}^{2}\right)$, where $\mu_{k}$ is called $k^{th}$ central moment, defined as $\mu_{k} = E\left(\left(X-\mu\right)^k\right), \text{ for } k = 1, 2, \ldots$
+\end{itemize}
+  
+\end{theorem}
+
+
+
+\begin{proof}
+
+First for (a)
+
+\begin{align*}
+  \mathrm{E} \bar{X} &= \mathrm{E}\left(\frac{1}{n} \sum_{i=1}^{n} X_{i}\right) \\
+  &=\frac{1}{n} \mathrm{E}\left(\sum_{i=1}^{n} X_{i}\right)\\
+  &=\frac{1}{n} n \mathrm{E} X_{i}=\mu
+\end{align*}
+
+Similarly for (b), we have
+
+\begin{align*}
+  \operatorname{Var} \bar{X}=\operatorname{Var}\left(\frac{1}{n} \sum_{i=1}^{n} X_{i}\right)=\frac{1}{n^{2}} \operatorname{Var}\left(\sum_{i=1}^{n} X_{i}\right)=\frac{1}{n^{2}} n \operatorname{Var} X_{1}=\frac{\sigma^{2}}{n}
+\end{align*}
+
+For the sample variance, using Theorem $5.2 .4,$ we have
+
+
+\begin{align*}
+ \mathrm{E} S^{2} &=\mathrm{E}\left(\frac{1}{n-1}\left[\sum_{i=1}^{n} X_{i}^{2}-n \bar{X}^{2}\right]\right) \\
+&=\frac{1}{n-1}\left(n \mathrm{E} X_{1}^{2}-n \mathrm{E} \bar{X}^{2}\right) \\
+&=\frac{1}{n-1}\left(n\left(\sigma^{2}+\mu^{2}\right)-n\left(\frac{\sigma^{2}}{n}+\mu^{2}\right)\right)=\sigma^{2} 
+\end{align*}
+
+
+  
+\end{proof}
+
+Note the theorem did not assume any particular distribution for $X_{i}$s, we assumed only that the random variables are iid and mean and variance exists. Now we extend this result with imposing normality. In this case we will see that we can  also derive the the distribution, which is the called the exact sampling distribution of of $\bar{X}$.
+
+
+\section{Sampling from iid Normal Random Variables}
+
+When we impose normality then naturally we get many nice results related to the sampling distribution of $\bar{X}$ and $S^2$. But before the results we need to give a short detour about some family of distributions which are derived using Normal distributions. 
+
+
+
+
+\subsection{The Chi-squared distribution}
+
+
+The first one is what we call the family of $\chi^2$ distributions. This is a sub-collection of the family of gamma distributions. So if you have not seen gamma distributions before you can ignore some details that how this is a gamma distribution. We will shortly see that these special gamma distributions arise as sampling distributions of variance estimators based on samples drawn from iid random variables distributed with normal distribution.
+
+\marginnote{Pronunciation of $\chi^2$: add a "k" before you say "I" and then ``say squared'', often in words its written ``Chi-squared''.}
+
+\begin{definition}[$\chi^{2}$ distribution]
+  For each positive number $m,$ the gamma distribution with parameters $\alpha=m / 2$ and $\beta=1 / 2$ is called the $\chi^{2}$ distribution with $m$ degrees of freedom. If $X$ has $\chi^{2}$ distribution with $m$ degrees of freedom we write $X \sim \chi^2_{m}$.
+
+\end{definition}
+
+
+
+
+
+\begin{remarks}[Moments]
+ $X \sim \chi^2_{m}$, then $E(X) = m$ and $Var(X) = 2m$. This i probably the most important take away from the definition of $\chi^{2}$ distribution with $m$ degrees of freedom is it has mean $m$ and variance $2m$. 
+\end{remarks}
+
+\marginbreak{0pt}
+
+\marginnote{\textbf{Gamma distribution:} Let $\alpha$ and $\beta$ be positive numbers. A random variable $X$ has the gamma distribution with parameters $\alpha$ and $\beta$ if $X$ has a continuous distribution for which the p.d.f. for $x>0$,
+
+\begin{equation*}
+f(x | \alpha, \beta)=\frac{\beta^{\alpha}}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x}
+\end{equation*}
+ and for $x\leq 0$, $f(x | \alpha, \beta) = 0$}
+
+The following is a useful theorem for a sequence of $\chi^{2}$ distributions with varying degrees of freedom
+
+\begin{theorem}[Sum of $\chi^{2}$ distributions]
+If the random variables $X_{1}, \ldots, X_{k}$ are independent and if $X_{i}\sim\chi^{2}_{m_i}$ for $i=1, \ldots, k,$ then the $\sum_i^k X_i \sim \chi^{2}_{\sum_i^k m_i}$ 
+\end{theorem}
+
+The next theorem is our first connection of $\chi^{2}$ and normal distributions,
+
+
+
+\begin{theorem}
+  Let $X \sim \mathcal{N}(0, 1)$ and define $Y:=X^{2}$. Then has the $Y \sim \chi^{2}_1$.
+\end{theorem}
+
+So the last theorem just says that the \emph{square of the standard normal is distributed as $\chi^{2}$}. Just combining the last two theorems give us the next important corollary
+
+\begin{corollary}
+  If the random variables $X_{1}, \ldots, X_{m}$ are iid with the common distribution $X_i \sim \mathcal{N}(0, 1)$, then $\sum_i^k X_i^2 \sim \chi^{2}_m$.
+\end{corollary}
+
+\begin{remarks}
+\begin{itemize}
+  \item[]
+  \item[(a)]  The last corollary is possibly the most important corollary that you should take away from this part that says the sum of squares of the standard normal is distributed with $\chi$ squared distribution where the degrees of freedom is just the number of standard normal distributions in the sum. So if we have sum of squares of the $m$ independent standard normally distributed random variables, the resulting distribution is a $\chi^2$ distribution with mean $m$ and variance $2m$. 
+
+  \item[(a)] The last corollary can also be applied also for sequence of iid random variables which are normal but not standard normal. This is because if $X_{i} \sim \mathcal{N}(\mu, \sigma^2)$, then we can create a new variable $Z_i := \left(X_{i}-\mu\right) / \sigma$, where $Z_{i} \sim \mathcal{N}(0, 1)$. So if we let $X_{1}, \ldots, X_{n}$ be iid random variables that follow the common distribution $X_{i} \sim \mathcal{N}(\mu, \sigma^2)$, then the sequence $\left(X_{1}-\mu\right) / \sigma, \ldots,\left(X_{n}-\mu\right) / \sigma$ are independent sequence and each of them is standard normally distributed random variables. Thus we have$ \sum_{i=1}^{n}\left(X_{i}-\mu\right)^{2} / \sigma^{2} \sim \chi^{2}_n$, or we can also write it as,
+
+  \begin{align}\label{eq:normalchi}
+    \sum_{i=1}^{n}\left(\frac{X_{i}-\mu}{\sigma} \right) ^2\sim \chi^{2}_n
+  \end{align}. 
+
+
+\end{itemize}
+ 
+\end{remarks}
+
+
+\marginbreak{0pt}
+\marginnote{The $t$ distributions are also known as Student's distributions (see Student, 1908 ), in honor of W. S. Gosset, who published his studies of this distribution in $1908$ under the pen name "Student."}
+
+\subsection{The $t$ distributions}
+
+
+
+The next important family of distributions are called the $t$ distributions, which are also important to understand the random samples from a normal distribution. The $t$ distributions, like the $\chi^{2}$ distributions, have been widely applied in important problems of statistical inference. The distributions are defined as follows.
+
+\begin{definition}[$t$ distributions]~\label{defn:tdist}
+  Consider two independent random variables $Y$ and $Z,$ such that $W$ has the $\chi^{2}$ distribution with $m$ degrees of freedom and $Z$ has the standard normal distribution. Suppose that a random variable $X$ is defined by the equation
+
+  \begin{align}
+    X=\frac{Z}{\sqrt{\cfrac{W}{m}}}
+  \end{align}
+
+Then the distribution of $X$ is called the $t$ distribution with $m$ degrees of freedom and we write $X \sim t_m$.
+\end{definition}
+
+\begin{remark}[Moments of $t$ Distribution]
+
+Although the mean of the $t$ distribution does not exist when $m\leq 1$, the mean does exist for every value of $m > 1$. Of course, whenever the mean does exist, its value is $0$ because of the symmetry of the $t$ distribution. In general, if a random variable $X \sim t_m$ for $(m>1),$ then it can be shown that $E\left(|X|^{k}\right)<\infty$ for $k<m$ and that $E\left(|X|^{k}\right)=$ $\infty$ for $k \geq m .$ If $m$ is an integer, the first $m-1$ moments of $X$ exist, but no moments of higher order exist. It can be shown that if $X \sim t_m$ with $(m>2),$ then $\operatorname{Var}(X)=m /(m-2)$.
+  
+\end{remark}
+ 
+
+\subsection{The $F$ distributions}
+
+\marginnote{$F$ distribution is also known as Snedecor's $F,$ whose derivation is quite similar to that of Student's $t$. Its named in honor of Ronald Fisher, so we have ``F''.}
+
+Finally we introduce the family, which is known as the family of $F$ distributions. The motivation, however, is somewhat different. The $F$ distribution arises naturally as the distribution of a ratio of variances. Although we will not use this distribution in this chapter, but you will see its very useful in two different hypothesis-testing situations. The first situation is when we wish to test hypotheses about the variances of two different normal distributions. The second situation will arise when we test hypotheses concerning the means of more than two normal distributions. Here is the formal definition,
+
+\begin{definition}[The $F$ distributions]
+Let $Y$ and $W$ be independent such that ${Y \sim \chi^{2}_m}$ and $W \sim \chi^{2}_n$. Define a new random variable $X$ as follows:
+
+\begin{align*}
+  X=\frac{Y / m}{W / n}=\frac{n Y}{m W}
+\end{align*}
+
+Then the distribution of $X$ is called the $F$ distribution with $m$ and $n$ degrees of freedom and we write $X \sim F_{m, n}$
+\end{definition}
+
+\begin{remark}
+
+When we speak of the $F$ distribution with $m$ and $n$ degrees of freedom, the order in which the numbers $m$ and $n$ are given is important, as can be seen from the definition of $X$  When $m \neq n,$ the $F$ distribution with $m$ and $n$ degrees of freedom and the $F$ distribution with $n$ and $m$ degrees of freedom are two different distributions. The next theorem gives a result relating the two distributions just mentioned along with a relationship between $F$ distributions and $t$ distributions.
+  
+\end{remark}
+
+
+
+\begin{theorem}
+
+\begin{itemize}
+  \item[]
+  \item[(a)] If $X \sim F_{m, n}$ then $1 / X \sim F_{n, m}$.
+
+  \item[(b)] If $Y \sim t_n$ then $Y^{2} \sim F_{1,n}$.
+\end{itemize}
+ 
+  
+\end{theorem}
+
+
+\subsection{Sampling distribution of Mean and Variance}
+
+
+Finally we have come to the important results related to the sampling distributions of $\bar{X}$ and $S^2$. We can put these results in the following theorem. But first recall 
+
+
+\begin{align*}
+  \bar{X}&=\frac{1}{n} \sum_{i=1}^{n} X_{i} \\
+    S^{2}&=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}
+\end{align*}
+
+\begin{theorem}[Sampling distributions of $\bar{X}$ and $S^2$ with normality]~\label{thm:samplemeannormal}
+
+Suppose that $X_{1}, \ldots, X_{n}$ are \emph{independent random variables} follow the common normal distribution with mean $\mu$ and variance $\sigma^{2}$. Then,
+\marginnote{$\independent$ notation is used for independence, so when we say $X$ and $Y$ are independent random variables we write $X \independent Y$.}
+
+\vspace*{.3cm}
+
+\begin{itemize}
+  \item[(a)] 
+  \begin{align}
+    \bar{X} \independent S^{2}
+  \end{align}
+
+  \item[(b)] 
+  \begin{align}
+    \bar{X} \sim \mathcal{N}\left(\mu, \sigma^{2} / n\right)\quad  \left(\text{i.e.,} \frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \sim \mathcal{N}\left(0, 1\right)\right)
+  \end{align} 
+
+  \item[(c)]
+  \begin{align}
+    \sum_{i=1}^{n}\left(\frac{X_{i}-\mu}{\sigma} \right) ^2= (n-1) \cfrac{S^{2}}{\sigma^{2}} \sim \chi^2_{n-1}
+  \end{align}
+
+
+\end{itemize}
+
+\end{theorem}
+
+
+One of the very useful consequences/applications of  \cref{thm:samplemeannormal} is 
+
+\begin{corollary}~\label{corr:normalt}
+If $X_{1}, \ldots, X_{n}$ are \emph{independent random variables} follow the common normal distribution with mean $\mu$ and variance $\sigma^{2}$,then 
+
+\begin{align}
+   \cfrac{\bar{X}-\mu}{S / \sqrt{n}} \sim t_{n-1}
+  \end{align}
+\end{corollary}
+
+
+\begin{remarks}
+\begin{itemize}
+  \item[]
+  \item Part (a) of the \cref{thm:samplemeannormal} says that even if  all the random variables are distributed identically with normal distribution with common mean and variance, $\bar{X}$ and variance $S^2$ are independent.  
+
+  \item Part (b) of the \cref{thm:samplemeannormal} gives us the sampling distribution of $\bar{X}$. Note, again we get this result because of normality assumption. This is often called the \emph{exact} distribution (as opposed to \emph{asymptotic} distribution!). Important is it is not always easy to get the exact distribution but in this case normality helped. Second thing to note is, since we have derived $\bar{X} \sim \mathcal{N}\left(\mu, \sigma^{2} / n\right)$, this then means $\frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \sim \mathcal{N}\left(0, 1\right)$. Last important point is, note that the variance of the distribution is $\sigma^{2} / n$. So we need to know $\sigma^{2}$, if we would like to know the distribution of $\bar{X}$. But this is often an unrealistic assumption. 
+
+
+  \item Part (c) of the \cref{thm:samplemeannormal} has at least two interesting points to observe. First it gives us the scaled distribution of $S^2$, where the scaling factor is $(n-1)/\sigma^2$. The second is if you compare this to \cref{eq:normalchi}. There we had $\chi^2(n)$ but here the theorem says if we replace the population mean $\mu$ with the sample mean $\bar{X}$, the effect is simply to reduce the degrees of freedom in the $\chi^2$ distribution from $n$ to $n-1$
+
+  \item We can also give a short proof of \cref{corr:normalt} using \cref{thm:samplemeannormal}. First note, we can write, 
+
+  \begin{align}\label{eqn:tratio}
+    \cfrac{\bar{X}-\mu}{S / \sqrt{n}} =  \cfrac{\cfrac{\bar{X}-\mu}{\sigma}}{\cfrac{S / \sqrt{n}}{\sigma}} 
+      = \cfrac{\left(\cfrac{\bar{X}-\mu}{\frac{\sigma}{\sqrt{n}}} \right)}{ \sqrt{\cfrac{S^{2}} {\sigma^{2}}}} = \frac{Z}{\sqrt{\cfrac{W} {n-1}}},
+  \end{align}
+
+
+
+  Where we have defined two new random variables $Z:= (\bar{X}-\mu) /(\sigma / \sqrt{n})$ and $W =(n-1) \left(S^{2} / \sigma^{2}\right)$. Now applying the result from \cref{thm:samplemeannormal}, we can see $Z$ and $W$ are independent and also $Z \sim \mathcal{N}(0, 1)$ and $ W \sim \chi^2_{n-1}$. But now we can see that this ratio is exactly how we defined $t$ distribution in \cref{defn:tdist}. So this gives us that $Z/\sqrt{W/(n-1)} \sim t_{n-1}$. One important aspect of this corollary is, now the distribution of $(\bar{X}-\mu)/ (S / \sqrt{n})$ does not depend on $\sigma^2$. The only unknown element in the ratio is the population mean $\mu$. This is really helpful if we would like to construct confidence intervals or testing for $\mu$ based on our sample estimate $\bar{x}$ and we do not know the population variance. This ratio $(\bar{X}-\mu)/ (S / \sqrt{n})$ is sometimes called the \emph{$t$ ratio}. Also if we define a random variable $T := (\bar{X}-\mu)/ (S / \sqrt{n})$, then we say $T$ has Student's $t$ distribution with $n-1$ degrees of freedom and we write, $T \sim t_{n-1}$
+
+
+
+\end{itemize}
+   
+\end{remarks}
+
+
+
+\newpage 
+
+\section{Point Estimation}
+Now we start estimation with point estimators. We can start from finding an estimator or we can also start evaluating an estimator. In general these two activities are closely connected. Often the methods of evaluating the estimators suggest how to find a point estimator. However, we have to start from somewhere, so we chose to start from the methods rather than evaluation and principles. For the time being we will only be concerned with the question - \emph{given a data how can we find an estimator? in particular how can we find one number that summarizes the information}. We will be discussing whether how to evaluate them (i.e., estimators are good or bad or desirable) in coming sections, but now let us mechanically see the \emph{methods of point estimation}.
+
+
+
+\subsection{Methods of point estimation}
+
+The rationale behind point estimation is quite simple. We have already seen many examples till now, e.g., the sample mean $\bar{X}$ is a point estimator and similarly the variance $S^2$. The idea is, a point estimator yields a single estimate of some parameter $\theta$ (or maybe a function of $\theta$) for every $x \in \mathcal{X}$ instead of an entire confidence region. We may ask, well isn't the idea simple? \emph{to estimate parameters, we can simply use their empirical counterparts}. For example, if our goal is to estimate the parameters of a normal distribution, that is $\mu$ and variance $\sigma^2$, then we can take their empirical counterparts sample mean and sample variance. This intuition works well, however, it could be the case that the parameters of a distribution do not have such empirical counterparts and neither we are always interested only in mean and variance. So we need some general methods to tackle these cases.
+
+\subsubsection{Method of Moments Estimators (MOMs)}
+
+The method of moments is, perhaps, the oldest method of finding point estimators, dating back at least to Karl Pearson in the late 1800s. It is based on the ideas to use some sort of sample counterparts, however it connects the parameters in a particular way. In method of moments first we equate $kth$ population moment to sample moments and then solve the system of equations to find the estimators. 
+
+% Let $X_{1}, \ldots, X_{n}$ be a sample from a population with pdf or pmf $f\left(x ; \vartheta_{1}, \ldots, \vartheta_{k}\right)$. Method of moments estimators are found by equating the first $k$ sample moments to the corresponding $k$ population moments, and solving the resulting system of simultaneous equations. More precisely we can write,
+
+% \newpage 
+
+% \begin{definition}
+
+% Let $\left(\mathbb{R}, \mathscr{B}, \mathcal{P}\right)$ be a real-valued statistical model, and let $k \in \mathbb{N}$ be given. Suppose that for each $\vartheta \in \Theta$ and every $j \in\{1, \ldots, r\},$ the $j$ th moment $\mu_{k}(\vartheta):=\mathbb{E}_{\vartheta}\left(X^{k}\right)$ exists. Furthermore, let $g: \mathbb{R}^{k} \rightarrow \mathbb{R}$ be continuous, and consider the parameter $\tau(\vartheta):=g\left(m_{1}(\vartheta), \ldots, m_{r}(\partial)\right) .$ In the associated infinite product model ( $\left.\mathbb{R}^{\mathrm{N}}, \mathscr{B}^{\otimes \mathrm{N}}, Q_{\vartheta}^{\otimes \mathrm{N}}: \vartheta \in \Theta\right),$ one can then define the estimator
+
+% \[
+% T_{n}:=g\left(\frac{1}{n} \sum_{i=1}^{n} X_{i}, \frac{1}{n} \sum_{i=1}^{n} X_{i}^{2} \ldots \ldots \frac{1}{n} \sum_{i=1}^{n} X_{i}^{r}\right)
+% \]
+
+% of $\tau,$ which is based on the first $n$ observations. Show that the sequence $\left(T_{n}\right)$ is consistent.
+  
+% \end{definition}
+
+\begin{definition}[Method of moments estimator (MOMs)]
+
+Assume iid random variables $X_{1}, \ldots, X_{n}$ follows a common distribution that is indexed by a $k$ -dimensional parameter vector $\vartheta = (\vartheta_{1}, \ldots, \vartheta_{k})$, also assume it has at least $k$ finite moments. For $j=1, \ldots, k,$ we define these moments by $\mu_{j}(\vartheta)=E_{\vartheta}\left(X_{i}^{j}\right)$. Suppose that the function $\mu(\vartheta)=\left(\mu_{1}(\vartheta), \ldots, \mu_{k}(\vartheta)\right)$ is a one-to-one function of $\vartheta$. Let $M\left(\mu_{1}, \ldots, \mu_{k}\right)$ denote the inverse function, that is, for all $\vartheta$
+
+\begin{align*}
+  \vartheta=M\left(\mu_{1}(\vartheta), \ldots, \mu_{k}(\vartheta)\right)
+\end{align*}
+
+Define the sample moments by $m_{j}=\frac{1}{n} \sum_{i=1}^{n} X_{i}^{j}$ for $j=1, \ldots, k .$ The method of moments estimator of $\vartheta$ is $\hat{\vartheta} =M\left(m_{1}, \ldots, m_{j}\right)$.
+
+\end{definition}
+% \end{definition}
+
+% \begin{definition}
+% Let $X_{1}, \ldots, X_{n}$ be a sample from a population with pdf or pmf $f\left(x | \vartheta_{1}, \ldots, \vartheta_{k}\right)$. Furthermore, Lets denote the first $k$ population moments of $X$ by $\mu_{j}:= E(X^j)\,\text{ for } j = 1, \ldots, k$ and the first $k$ empirical moments by $m_{r}$, $r=1,...,k$, respectively. The \emph{method of moments estimator} $\left(\hat{\vartheta}_{1}, \ldots, \hat{\vartheta}_{\boldsymbol{k}}\right)$ of $\left(\vartheta_{1}, \ldots, \vartheta_{\boldsymbol{k}}\right)$ is obtained by solving the following system of equations for $\left(\vartheta_{1}, \ldots, \vartheta_{k}\right)$ in terms of $\left(m_{1}, \ldots, m_{k}\right)$
+
+% \begin{align*}
+% m_{1} &=\mu_{1}^{\prime}\left(\vartheta_{1}, \ldots, \vartheta_{k}\right) \\
+% m_{2} &=\mu_{2}^{\prime}\left(\vartheta_{1}, \ldots, \vartheta_{k}\right) \\
+% & \vdots \\
+% m_{k} &=\mu_{k}^{\prime}\left(\vartheta_{1}, \ldots, \vartheta_{k}\right)
+% \end{align*}
+
+
+% \end{definition}
+
+The definition might be a bit abstract, but note the usual way of finding estimators using MOMs is to set up the $k$ equations $m_{j}=\mu_{j}(\theta)$ and then solve for $\theta$. Let us look at some concrete examples.
+
+\begin{example}[MOM for Normals]
+Suppose $X_{1}, \ldots, X_{n}$ are iid $\mathcal{N}\left(\zeta, \sigma^{2}\right)$. In the preceding notation then
+
+\begin{align*}
+  \vartheta_{1}&=\zeta \\
+  \vartheta_{2}&=\sigma^{2}
+\end{align*}
+
+So $(\vartheta_{1}, \vartheta_{2})$ are our parameters that index the distribution and also we are interested in these parameters. Now note the moments are, $\mu_{1} = E(X_i)=\zeta$ and $\mu_{2} = E(X_i^2)= Var(X_i) + (E(X_i))^{2} =\sigma^{2}+\zeta^{2}$, so we can let
+
+\begin{align*}
+ \mu_{1}&=\zeta \\
+ \mu_{2}&=\zeta^{2}+\sigma^{2} \\
+  m_{1}&=\bar{X} \\
+  m_{2}&=(1 / n) \sum X_{i}^{2} \\
+\end{align*}
+
+This gives us to write the system of equations,
+
+
+\boxalign[0.3\textwidth]{
+\vspace*{.7cm}
+\begin{align*}
+  \bar{X}&=\zeta  \\ 
+   \frac{1}{n} \sum X_{i}^{2}&=\zeta^{2}+\sigma^{2}
+\end{align*}}
+
+
+
+
+Now, solving for $\zeta$ and $\sigma^{2}$ yields the method of moments estimators
+
+\begin{align*}
+   \hat{\theta}_1 =\hat{\zeta}=\bar{X} \quad \text { and } \quad \hat{\theta}_2 = \hat{\sigma}^{2}=\frac{1}{n} \sum X_{i}^{2}-\bar{X}^{2}=\frac{1}{n} \sum\left(X_{i}-\bar{X}\right)^{2}
+\end{align*}
+
+
+ \end{example}  
+In the last simple example, the method of moments solution coincides with our intuition and perhaps gives some credibility to both. Also note the method is somewhat more helpful when no obvious estimator suggests itself. 
+
+
+\begin{example}[MOM for exponentials]
+Suppose $X_1, \ldots, X_n$ constitutes a random sample from the distribution of $X$ where  $X \sim Exp(\lambda) $ (i.e., $X$ is distributed exponentially with parameter $\lambda$). So the pdf of $X$ then is
+
+\begin{align*}
+  f(x ; \lambda)=\left\{\begin{array}{ll}\lambda e^{-\lambda x} & x \geq 0 \\ 0 & x<0\end{array}\right.
+\end{align*}
+
+We will estimate the parameter $\lambda$ using the MOMs. The first moment of $X$ in this case is
+
+\begin{align*}
+\mu_{1} = \E(X) = \frac{1}{\lambda}
+\end{align*}
+
+The first empirical moment $m_1$ is simply $\frac{1}{n} \sum_{i=1}^{n}{X_i} = \overline{X}$. Equating the first theoretical moment with the first empirical moment gives
+
+\begin{align*}
+\frac{1}{\lambda} & = \frac{1}{n} \sum_{i=1}^{n}{X_i} 
+\end{align*}
+
+Now we solve for $\lambda$, and we get the MOMs estimator for the parameter $\lambda$,  
+
+
+\begin{align*}
+\hat{\lambda}= \frac{1}{\frac{1}{n} \sum_{i=1}^{n}{X_i} } =\frac{1}{\bar{X}}
+\end{align*} 
+\end{example}
+
+
+\begin{remark}
+
+As we have seen from the examples that the moment method is usually easy to apply. However, it does not always provide the best estimates in the statistical sense. Moment estimators do not always possess characteristics such as unbiasedness, efficiency or sufficiency (we will define these objects in next section after MLE). Moreover, the moment estimator does not always exist. For example, the expected value or the first moment of the Cauchy distribution does not exist!, so we cannot use MOMs.
+
+
+\end{remark}
+
+
+\subsubsection{Maximum Likelihood Estimators (MLEs)}
+Maximum likelihood estimators, or often in short we say MLEs, are by far, the most popular estimators. In simple words - under certain distributional assumption this technique gives us an estimator such that the probability of the data is maximized.  
+
+\begin{definition}[Likelihood Function and MLE]
+  Let $f(x_1, \ldots, x_n ; \vartheta)$ be the joint probability density function (or probability mass function) of the random variables $X_{1}, \ldots, X_{n}$.    
+
+\begin{itemize}
+  \item[]
+  \item[(a)] The function  $L(\vartheta ; x_{1}, \ldots, x_{n}): \Theta \rightarrow[0, \infty)$, where
+
+    \begin{align*}
+    L(\vartheta ; x_{1}, \ldots, x_{n}):=f(x_{1}, \ldots, x_{n} ; \vartheta)
+  \end{align*} 
+
+  is called the \emph{likelihood function for the outcome $x_{1}, \ldots, x_{n}$}. 
+
+  \item[(b)] An estimator $T^{ML}: \mathcal{X} \rightarrow \Theta$ of $\vartheta$ is called a \emph{maximum likelihood estimator}, if for each $x_{1}, \ldots, x_{n} \in \mathcal{X}$
+
+  \begin{align*}
+  L( T^{ML}(x_{1}, \ldots, x_{n}), x_{1}, \ldots, x_{n})=\max _{\vartheta \in \Theta} L(\vartheta ; x_{1}, \ldots, x_{n})
+  \end{align*}
+
+i.e., if the estimate $T^{ML}(x_{1}, \ldots, x_{n})$ is a maximizer of the function $L(\vartheta ; x_{1}, \ldots, x_{n})$ on $\Theta$ holding $x_{1}, \ldots, x_{n}$ fixed. We also write this as ${T^{ML}(x_{1}, \ldots, x_{n}) = \argmax_{\vartheta \in \Theta} L(\vartheta ; x_{1}, \ldots, x_{n})}$
+\end{itemize}
+
+
+
+
+
+
+\end{definition}
+
+
+Note, the likelihood function is the joint density of the data, but we will regard this as a function of the parameter $\vartheta$. Recall, when we think about the joint density, we think it as a function of the data and treat $\vartheta$ as a fixed parameter. Likelihood function is just the opposite, we will now treat the data $x_{1}, \ldots, x_{n}$ is fixed and this function (calculates same thing as density) is a function of parameter $\vartheta$. That is why if you compare the density $f\left(x_{1}, \ldots, x_{n} ; \vartheta\right)$ with $L\left(\partial ; x_{1}, \ldots, x_{n}\right)$, you can notice the positions of the arguments of the function have been swapped. $\vartheta$ can be scaler or vector. 
+
+
+\begin{figure}[H]
+\definecolor{qqwuqq}{rgb}{0,0.39,0}
+\centering
+\begin{tikzpicture}
+
+\begin{axis}[
+x=2.5cm,
+y=.7cm,
+axis lines=middle,
+xmin=0,
+xmax=4,
+ymin=0,
+ymax=5.16,
+every axis y label/.style={at=(current axis.above origin),anchor=south},
+every axis x label/.style={at=(current axis.right of origin),anchor=west},
+grid,
+xtick={2.7},
+ytick={},
+xticklabel={$2.7$},
+yticklabel={\empty},
+xlabel=$\vartheta$, 
+ylabel=${L(\vartheta)}$,
+]
+
+
+\draw[
+/pgf/fpu,/pgf/fpu/output format=fixed,
+line width=2pt,
+color=qqwuqq,
+smooth,
+samples=100,
+domain=0:4] 
+
+plot(\x,{3-(((\x)-2)^(4)-3.2*((\x)-1)^(2)+3*((\x)-1)^(2)-0.5*((\x)-1)+0.6)});
+
+
+\end{axis}
+\end{tikzpicture}
+\caption{Example of a likelihood function}\label{fig:likelihoodfunction}
+\end{figure}
+
+
+MLE is an estimator which finds this maximal $\vartheta$ such that in every data point the likelihood function is maximized. \cref{fig:likelihoodfunction} is an example of a likelihood function for a scaler parameter $\vartheta$ and it is maximized at the value of $2.7$. The idea of the maximum likelihood estimation is by construction it will try to give us the value like $2.7$ in \cref{fig:likelihoodfunction}. So a MLE searches the optimal parameter such that the likelihood of the data is maximized. Following are some important remarks,
+
+
+
+
+\begin{remarks}
+
+\begin{itemize}
+  \item[]
+
+  \item  If $X_{1}, \ldots, X_{n}$ are iid random variables, which is often the assumption we will make, then we can write,
+
+  \begin{align*}
+    L(\vartheta ; x_{1}, \ldots, x_{n}):=\prod_{i = 1}^n f(x_{i} ; \vartheta)
+  \end{align*} 
+
+  So likelihood function is then just the product of marginal densities.
+
+  \item Often we will maximize log-likelihood rather than likelihood. We will denote the log-likelihood with $\ell(\vartheta; x_1, \ldots, x_n)$
+
+  \begin{align*}
+    \ell(\vartheta; x_1, \ldots, x_n) = \log L(\vartheta ; x_{1}, \ldots, x_{n})
+  \end{align*}
+
+
+   This is because log transformation is a monotone transformation (one to one increasing function), so maximizing the log-likelihood leads to the same answer as maximizing the likelihood. Often, it is easier to work with the log-likelihood. Also, note If we multiply $L(\vartheta ; x_{1}, \ldots, x_{n}):$ by any positive constant $c$ (not depending on $\vartheta$) then this will not change the MLE. Hence, we shall often drop constants in the likelihood function.
+
+
+   \item Often too ease the notational burden we will use $\widehat{\theta}$ for an MLE, where $\widehat{\theta} := T^{ML}(X_1, \ldots, X_n)$. 
+
+
+\end{itemize}
+  
+\end{remarks}
+
+
+
+
+
+% \begin{figure}[H]
+% \pgfmathdeclarefunction{exp2}{1}{%
+%   \pgfmathparse{(#1)- 100*x^2- 300*x+ 100}}%
+
+
+% \begin{tikzpicture}
+% \begin{axis}[
+%   no markers, domain=-1000:1000, range=-10:10, samples=100,
+%   axis lines*=left, xlabel=$x$, ylabel=$f{(x)}$,
+%   xticklabels = {},
+%   every axis y label/.style={at=(current axis.above origin),anchor=south},
+%   every axis x label/.style={at=(current axis.right of origin),anchor=west},
+%   height=5cm, width=12cm,
+%   xtick={}, ytick=\empty,
+%   enlargelimits=false, clip=false, axis on top
+%   ]
+
+%   \addplot [very thick,gray!60!white] {exp2(3)};
+
+% %\node[below] at (axis cs:3, 0)  {$\mu$}; 
+% \end{axis}
+% \end{tikzpicture}%
+
+% \caption{}
+% \end{figure}
+
+
+% \begin{tikzpicture}[baseline]
+% \begin{axis}[
+% axis lines*=left, xlabel=$x$, ylabel=$f{(x)}$,
+% xticklabels = {},
+% every axis y label/.style={at=(current axis.above origin),anchor=south},
+% every axis x label/.style={at=(current axis.right of origin),anchor=west},
+% width=10cm,
+% height=5cm,
+% no markers,
+% xmax=.2,xmin=-.2,
+% ymin=0,ymax=18,
+% xtick={},
+% ytick={},
+% anchor=center,
+% axis equal,
+% enlargelimits=false, 
+% axis on top
+% ]
+% \addplot[smooth] {3- x^4 + 3.2*x^3 + x^2- 2*x+ 0.6} ;
+% \end{axis}
+% \end{tikzpicture}
+
+
+
+% \begin{tikzpicture}[line cap=round,line join=round,>=triangle 45]
+% \begin{axis}[
+% x=2cm,y=1.cm,
+% axis lines=left,
+% xmin=-4.64,
+% xmax=3.74,
+% ymin=0,
+% ymax=4.62,
+% xtick={},
+% ytick={},]
+% \clip(-4.64,-1.63) rectangle (3.74,4.62);
+% \draw[line width=2pt,color=black,smooth,samples=100,domain=-4.64:3.74] plot(\x,{3-((\x)^(4)+3.2*(\x)^(3)+2*(\x)^(2)-2*(\x)+0.6)});
+% \begin{scriptsize}
+% \draw[color=black] (-2.18,-1.52) node {$f$};
+% \end{scriptsize}
+% \end{axis}
+% \end{tikzpicture}
+
+
+We now give a detailed example, which also explains the intuitions of MLEs.
+
+\begin{example}[MLE for normal]~\label{ex:MLEnormal}
+Suppose we have observed three realizations of a random variable $X$, they are $x_1 = 250, x_2 = 258$ and $x_3 = 262$. So this is our data set which consists of these three observations. Now \emph{based on some prior knowledge} of the data we assumed the this data is coming from a normal distribution. So we can think $x_1$, $x_2$ and $x_3$ are realizations of a variable $X\sim \mathcal{N}(\mu, \sigma^2)$, where we know $\sigma^2 = 100$ but the mean $\mu$ is unknown to us and our goal is to estimate $\mu$ with this observed dataset.
+
+Suppose we have two possible candidates, $\mu_1=230$ and $\mu_2=257$. Now notice \cref{fig:NormalHeuristics} where the left is the density of the normal distribution assuming the mean $\mu_1 = 230$ and the right is the density assuming $\mu_2 = 257$, $x_1$, $x_2$ and $x_3$ are the observed values.
+
+\begin{figure}[H]
+  \begin{adjustwidth}{-20pt}{}
+
+\pgfmathdeclarefunction{gauss}{2}{%
+  \pgfmathparse{1/(#2*sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}%
+}
+
+
+\begin{tikzpicture}
+\begin{axis}[
+  no markers, domain=0:8, samples=100,
+  axis lines*=left, xlabel=$x$, ylabel=$f{(x)}$,
+  xticklabels = {$\color{red}{\mu_1}$, $x_1$, $x_2$, $x_3$},
+  every axis y label/.style={at=(current axis.above origin),anchor=south},
+  every axis x label/.style={at=(current axis.right of origin),anchor=west},
+  height=5cm, width=8cm,
+  xtick={3.5, 5.3, 6.3, 7}, ytick=\empty,
+  enlargelimits=false, clip=false, axis on top
+  ]
+
+  \addplot [very thick,gray!60!white] {gauss(3.5,1)};
+
+%\node[below] at (axis cs:3, 0)  {$\mu$}; 
+\end{axis}
+\end{tikzpicture}%
+\begin{tikzpicture}
+\begin{axis}[
+  no markers, domain=0:8, samples=100,
+  axis lines*=left, xlabel=$x$, ylabel=${f(x)}$,
+  xticklabels = {$\color{red}{\mu_2}$, $x_1$, $x_2$, $x_3$},
+  every axis y label/.style={at=(current axis.above origin),anchor=south},
+  every axis x label/.style={at=(current axis.right of origin),anchor=west},
+  height=5cm, width=8cm,
+  xtick={3.5, 3, 4, 4.7  }, ytick=\empty,
+  enlargelimits=false, clip=false, axis on top
+  ]
+
+  \addplot [very thick,gray!20!black] {gauss(3.5,1)};
+
+%\node[below] at (axis cs:3, 0)  {$\mu$}; 
+\end{axis}
+
+\end{tikzpicture}
+
+\end{adjustwidth}
+\caption{Heuristics of MLE}\label{fig:NormalHeuristics}
+\end{figure}
+
+
+
+Since we know that for normal distribution, most of the data points will be close to the mean, we can say there is little possibility that the data is coming from the distribution with mean $\mu_1$, rather it is highly likely that the data came from the normal distribution with mean $\mu_2$. The idea of MLE is to use this idea to estimate the unknown parameter $\mu$. So we will select the $\mu$ for which the probability of the data is maximized. Or in other words, when we find an MLE we cast this problem into an optimization problem to find an optimal estimate of the parameter given the data. 
+
+Now let us solve this problem, note because of normality we can write the density,
+
+
+\begin{align*}
+f(x; \mu)=\frac{1}{\sqrt{2 \pi}(10)} \exp\left[-\frac{1}{2}\left(\frac{x-\color{red}\mu}{10}\right)^{2}\right]
+\end{align*}
+
+Now using this we can write the likelihood function as 
+
+\begin{align} \label{eq:likelihoodNo}
+&L(\mu; x_1, x_2, x_3) \notag\\
+&= f(x_1; \mu) \times f(x_2; \mu) \times f(x_3; \mu) \notag \\
+&=\frac{1}{\sqrt{2 \pi}(10)} \exp\left[-\frac{1}{2}\left(\frac{x_1-\color{red}\mu}{10}\right)^{2}\right]\times \frac{1}{\sqrt{2 \pi}(10)} \exp\left[-\frac{1}{2}\left(\frac{x_2-\color{red}\mu}{10}\right)^{2}\right] \notag \\ 
+&\qquad\times \frac{1}{\sqrt{2 \pi}(10)} \exp\left[-\frac{1}{2}\left(\frac{x_3-\color{red}\mu}{10}\right)^{2}\right] \notag \\
+&= \left(\frac{1}{\sqrt{2 \pi}(10)}\right)^3 \exp\left[-\frac{1}{2\times 100}\sum_{i = 1}^{3}\left(x_i-\color{red}\mu\right)^{2}\right]
+\end{align}
+
+Ofcourse we can directly maximize \cref{eq:likelihoodNo} with respect to $\mu$ and then solve for the optimal $\mu$, but the algebra is tedious. So we can make our life easier when we see that  $L(\mu; x_1, x_2, x_3) $ will be maximized by the value of $\mu$ that minimizes $Q(\mu; x_1, x_2, x_3)$, where 
+\begin{align*}
+ Q(\mu; x_1, x_2, x_3)=\sum_{i=1}^{3}\left(x_{i}-\mu\right)^{2}=\sum_{i=1}^{3} x_{i}^{2}-2 \mu \sum_{i=1}^{3} x_{i}+3 \mu^{2}
+\end{align*}
+
+which is simply a quadratic function, we can easily take the derivative, set it equal to $0$ and form the first order condition (FOC), then solving for the optimal $\vartheta$, which we denoted by $\hat{\vartheta}$ will be our MLE. So, here is the calculation from the FOC
+
+
+\begin{align*}
+\frac{d}{d \mu}  Q(\hat{\mu}; x_1, x_2, x_3)  &{\color{red}\stackrel{}{=}} 0 \\
+\implies -2 \sum_{i=1}^{3} x_{i} + 6 \hat{\mu}&{\color{red}\stackrel{}{=}} 0\\
+\implies \hat{\mu} = \frac{1}{3}\sum_{i=1}^{3} x_{i} = \overline{x}
+\end{align*}
+
+
+
+Infact we can apply this result even if we have data sets of $n$ realizations. So on that case $\hat{\mu} = \frac{1}{n}\sum_{i = 1}^{n} x_i$. So the MLE of the population mean $\mu$ of the normal distribution is sample mean $\bar{x}$. This makes sense, right!
+
+
+
+\end{example}
+
+
+
+
+% \begin{definition}[maximum likelihood estimate]
+
+% Let $X_1, \ldots, X_n$ independent sample variables, identically distributed like a random variable $X$ with density function $f_X(x;\vartheta)$ Further denote the corresponding likelihood function with $L(\vartheta)$. The value $\vartheta_{\max}$, where the likelihood function $L(\vartheta)$ assumes a global maximum, can be used as a point estimate for the parameter $\vartheta$. The value $\vartheta_{\max}$, for which
+
+% \begin{align*}
+% L(\vartheta_{\max}) \geq L(\vartheta) \qquad \text{for all}~ \vartheta \in \Tt,
+% \end{align*} 
+
+% is called \emph{maximum likelihood estimate} for $\vartheta$. As notation we use $\hat{\vartheta}_{ML}$. The ML-estimator for $\vartheta$ is called $T_\vartheta^{ML}$ and it is $T_\vartheta^{ML}(\Xis) = \hat{\vartheta}_{ML}$.
+% \end{definition}
+
+
+
+
+
+
+
+Now we give some important remarks regarding MLEs. Under certain regularity conditions MLEs satisfy some nice properties like, identifiability, existence, consistency and asymptotic normality. We defer this discussion after we introduce some more concepts in coming sections. Now we state a theorem which is useful which is known as the \emph{invariance property of MLE}.
+
+\begin{theorem}[Invariance Property of MLEs]
+  if $\hat{\vartheta}$ is an MLE of $\vartheta,$ and $g(\vartheta)$ be a function of $\vartheta$, then an MLE of $g(\vartheta)$ is $g(\hat{\vartheta})$.
+\end{theorem}
+
+Note, for a one-to-one function $g$, this is just a direct extention, but this result holds in general even if $g$ is not one-to-one. For the general case, we need to carefully write the MLE of $g(\vartheta)$.
+
+We now contiue with the last example of Normal distribution but now with both unknown mean and variance, where we will also apply invariance property.
+
+
+\begin{example}[MLE for normals, with unknown meand and variance]
+  Suppose again that $X_{1}, \ldots, X_{n}$ form a random sample from a normal distribution, but suppose now that both the mean $\mu$ and the variance $\sigma^{2}$ are unknown. The parameter vector is then $\theta=\left(\mu, \sigma^{2}\right)$. For all observed values $x = (x_{1}, \ldots, x_{n})$ the likelihood function $L\left(\mu, \sigma^{2};x\right)$ can be written as 
+
+  \begin{align*}
+    L\left(\mu, \sigma^{2};x\right) = \frac{1}{\left(2 \pi \sigma^{2}\right)^{n / 2}} \exp \left[-\frac{1}{2 \sigma^{2}} \sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2}\right]
+  \end{align*}
+
+
+   This function must now be maximized over all possible values of $\mu$ and $\sigma^{2},$ where $-\infty<\mu<\infty$ and $\sigma^{2}>0$ Instead of maximizing the likelihood function $L\left(\mu, \sigma^{2};x\right)$ directly, it is actually to maximize $\log L_{n}\left(\mu, \sigma^{2};x\right)$, i.e., the log likelihood function. We will get the same result because, log transformation is a monotone transformation, so this means, maximizing the log likelihood or maximizing the likelihood will give us the same maximum.  
+
+\begin{align*}
+  L(\theta) &=\log f_{n}\left(\boldsymbol{x} | \mu, \sigma^{2}\right) \\
+&=-\frac{n}{2} \log (2 \pi)-\frac{n}{2} \log \sigma^{2}-\frac{1}{2 \sigma^{2}} \sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2}
+\end{align*}
+
+
+\end{example}
+
+\begin{remark}[Calculation of ML estimators]
+\begin{itemize}
+\item[]
+ 
+
+\item The \emph{log-likelihood function}, the natural logarithm of the likelihood function $\ln(L(\vartheta))$, is a monotone transformation of likelihood. Therefore $L(\vartheta)$ and $\ln L(\vartheta)$ have their maximum at the same position $\vartheta_{\max}$. This property is very helpful because the maximum position of $\ln L(\vartheta)$ is often easier to determine. It applies:
+
+\begin{align*}
+\ln(L(\vartheta)) = \ln \left( \prod_{i=1}^{n}{f_X(x_i; \vartheta)}\right) = \sum_{i=1}^{n}{\ln(f_X(x_i;\vartheta))}.
+\end{align*}
+
+\item If the likelihood function depends on $k$ parameters $\varthetas$, then the maximum $(\hat \vartheta_1, ..., \hat \vartheta_k)'$ of the (log) likelihood function is determined by the solution of the $k$-elementary system of equations
+
+\begin{align*}
+\frac{\partial}{\partial \vartheta_1} L(\varthetas) & = 0 \\
+\frac{\partial}{\partial \vartheta_2} L(\varthetas) & = 0 \\
+\vdots \\
+\frac{\partial}{\partial \vartheta_k} L(\varthetas) & = 0. 
+\end{align*}
+
+A check whether the found places are really maximum places is possible in the following way: Designate with $H$ a $k \times k$ matrix consisting of the partial derivatives of the likelihood function at the place $(\hat \vartheta_1, ..., \hat \vartheta_k)'$
+
+\begin{align*}
+H = \begin{pmatrix} h_{11} & \hdots & h_{1k} \\ \vdots & \ddots & \vdots \\ h_{k1} & \hdots & h_{kk} \end{pmatrix} \qqqad \text{\with} \qqquad h_{ij} = \left. \frac{\partial L(\varthetas)}{\partial \vartheta_i \partial \vartheta_j}  \right|_{\a6}.
+\end{align*}
+
+If the matrix $H$ has a negative definition, i.e. $\sum_{i=1}^{n}{\sum_{i=1}^{n}{y_i y_j h_{ij}}} < 0$ for any vector $y=(y_1, ..., y_n) \neq (0, ...,0) \in \R^k$, then there are maximum digits.
+
+To check whether a matrix is negative definite, the eigenvalues (see chapter matrix calculation can be calculated. If all eigenvalues are negative, the matrix is negatively definite.
+
+\item If the parameter $\vartheta$ can only assume discrete values, it is useful to examine the monotonicity property of the likelihood function or the quotient $\frac{L(\vartheta)}{L(\vartheta + 1)}$. If the value of the quotient changes from a value less than 1 to a value greater than 1, a (local) maximum is reached.
+\end{itemize}
+\end{remark}
+
+% \begin{remark}[properties of ML estimators]
+% \begin{enumerate}[wide=0.5em, leftmargin =*, nosep, before = \leavevmode\vspace{-\baselineskip}, label = \alph*)]
+% \item An ML estimator is not necessarily unbiased (for example $S_*^2$ for the variance of the normal distribution).
+% \item The ML estimator is not necessarily unique.
+% \item Under certain conditions to the density function, if several estimators meet the conditions for an ML-estimator, then there is exactly one among them that is consistent. \\
+% If the ML estimator is unique, it is also consistent. The consistent ML-estimator $T_\vartheta^{ML}(\Xis)$ is asympto\-table normally distributed, that is
+% \begin{align*}
+% P\left( \frac{T_\vartheta^{ML}(\Xis) - \vartheta}{\sqrt{Var_\vartheta(T_\vartheta^{ML}(\Xis))}} \leq z \right) \xrightarrow{n \ra \infty} \Phi(z).
+% \end{align*}
+% \item The ML estimator is invariant to injective transformations. That means for an injective function $\vp : \R \ra \R$ and the ML-estimator $\vartheta_{ML}$ for $\vartheta$ is $\vp(\hat \vartheta_{ML})$ the ML-estimator for $\vp(\vartheta)$.
+% \end{enumerate} 
+% \end{remark}
+
+% \begin{example}
+% Be $X \sim Poi(\lambda)$ and $\Xis$ independently and identically distributed as $X$. Wanted is the maximum likelihood estimator for $\lambda$. It applies:
+% \begin{align*}
+% f_{X_i}(x_i) & = \frac{\lambda^{x_i}}}{x_i !} \cdot e^{-\lambda} \quad i=1,...,n \\
+% f_{\Xis}(\xis) & = \prod_{i=1}^{n}{ \frac{\lambda^{x_i}}}{x_i !} \cdot e^{-\lambda} \\
+% & = \lambda^{\sum_{i=1}^{n}{x_i}} \cdot \left(\prod_{i=1}^{n}{\frac{1}{x_i !}}\right) \cdot e^{-n\lambda} =: L(\lambda) \\
+% \ln \left(L(\lambda)\right) & = \sum_{i=1}^{n}{x_i} \cdot \ln \left(\lambda\right) - n\lambda + \sum_{i=1}^{n}{\ln \left(\frac{1}{x_i !}\right)} \\
+% \frac{\partial \ln \left(L(\lambda)\right)}{\partial \lambda} & = \frac{\sum_{i=1}^{n}{x_i}}}{\lambda} - n \overset{!}{=} 0 \\
+% & \LRa \frac{\sum_{{i=1}^{n}{x_i}}}{\lambda} = n \quad \Ra \quad \hat \lambda = \overline x \\
+% \frac{\partial^2 \ln \left(L(\lambda)\right)}{\partial^2 \lambda} & = - \frac{\sum_{i=1}^{n}{x_i}}}{\lambda^2} < 0 \quad \Ra \quad \text{maximum}.      
+% \end{align*}
+% The maximum likelihood estimator for $\lambda$ is therefore the arithmetic mean of the observations, so that $\has \lambda_{ML} = \overline X$.
+% \end{example}
+
+
+
+
+
+% \section{Concept of Estimation}
+% \begin{myfont}
+%     As discussed before a population of interest is usually modeled by family of distributions indexed by one or more parameters. While the functional form of the distribution are assumed to be known, usually, however, all or some values of the distribution parameters are unknown. In order to know well about the population, one would like to know the parameter. 
+
+%     Let $X$ be a random variable which has the distribution function 
+%     When sampling is from a population described by a distribution function $F_{X}(x, \vartheta)$, knowing $\vartheta$ yields knowledge of the entire population. In statistical analyses, the information on unknown $\vartheta$ is extracted from a sample $X_1,,X_n$ from the population is used to make statements about the unknown parameters. It is also common to assume that this sample is a random sample which means that the random variables $X_1,\ldots,X_n$ are independent and identically distributed (iid) as $X$.
+
+%     If the sample size $n$ is large, then the observed sample $x_{1}, , x_{n}$ is a long list of numbers that may be hard to interpret. So functions of the observed samples are used to summarize the information. Some of such a function is particularly used to make statements about which values the unknown parameters probably have. 
+
+
+% \end{myfont}
+
+
+
+
+% ==1 
+
+% Statistical analyses often assume that one knows which probability distribution the feature of interest follows. Usually, however, all or some values of the distribution parameters are unknown. 
+
+
+
+% \underline{Goal:}
+%  With the help of a sample we want to estimate the parameter values. In other words: Given a sample $x_1, \ldots, x_n$, a function $T(x_1, \ldots, x_n)$ of the sample values is used to make a statement about which values the unknown parameters probably have.
+
+% ==1
+% \begin{example}[coin toss]
+%     With the help of a coin toss, one of two possible decisions should be made. However, one may assume that the coin is not fair, i.e. the probability of the coin showing head when it is tossed is not  exactly $\frac{1}{2}$. To check this, toss the coin ten times independently. The random variable $X$ counts how many times the coin shows head and is binomially distributed: $X \sim Bin(10, p)$. Here, the distribution type and the parameter $n$ are known. The parameter $p$ is unknown. \\
+%     In order to decide whether the coin is fair, one tries to conclude $p$ on the basis of the collected data. One wants to estimate $p$.
+% \end{example}
+
+
+% \section{Point Estimate vs. Interval Estimate}
+% There are two principles for estimating the characteristics of a distribution: point estimation and interval estimation. Both use the information contained in a sample to make statements about the probable value of the variable of interest.
+
+% \begin{itemize}
+%     \item advantage: clear estimated value
+%     \item disadvantage: Does not take into account the uncertainty of the estimate (different samples will usually lead to different estimates of the parameters)
+% \end{itemize}
+
+% In \emph{interval estimation}, a whole interval of possible values is given to estimate for the quantity of interest.
+% \begin{itemize}
+%     \item advantage: takes into account the uncertainty of the estimate 
+%     \item disadvantage: No clear estimate
+% \end{itemize}
+
+\section{Evaluation of estimators}
+The methods we discussed in previous sections gives some reasonable techniques to find point estimators. However the issue is, since it is possible to apply more than one of these methods in a particular situation, we are often faced with the more than one estimators, then how do we choose one?. 
+
+Of course, it is possible that different methods of finding estimators will yield the same answer, which makes evaluation a bit easier (e.g., in regression least squares and MOMs) but, in many cases, different methods will lead to different estimators, i.e., different functions of data. So we need to investigate the estimators. This is called \emph{evaluation of the estimators}. 
+
+In the following we will discuss some of the criterion to evaluate. For all estimators in the background we always have the statistical model $\left(\mathcal{X}, \mathscr{F}, \mathcal{P}\right)$, where $\mathcal{P} = \{P_{\vartheta}: \vartheta \in \Theta\}$ is the family of probability distributions. 
+
+
+% The general topic of evaluating statistical procedures is part of the branch of statistics known as \emph{decision theory}, which requires a separate course, however, in this section we will introduce some basic criteria for evaluating estimators, and examine several estimators against these criteria.
+
+
+\begin{definition}[Bias, Unbiasedness, MSE]
+Let $\theta$ be our parameter of interest, then 
+
+\begin{itemize}[itemsep = 3pt]
+  \item We call an estimator $T: \mathcal{X} \rightarrow \mathbb{R}$ of $\theta$ \emph{unbiased} if $E_{\vartheta}(T)=\vartheta \text { for all } \vartheta \in \Theta$.
+
+\item When $T$ is NOT unbiased, then there is a bias of $T$ at $\theta$, we will denote it by $\operatorname{Bias}_{\vartheta}(T)$, where $\operatorname{Bias}_{\vartheta}(T) := E_{\vartheta}(T)-\vartheta$.
+
+\item The mean squared error or in short \emph{MSE} of $T$ at $\theta$ is the average of the squared error of $T$ at $\theta$, defined as ${\operatorname{MSE}_{\vartheta}(T):=E_{\vartheta}\left(\left(T-\vartheta\right)^{2}\right)}$. 
+\end{itemize}
+
+\end{definition}
+
+
+\begin{remarks}
+
+\begin{itemize}
+  \item[]
+  \item An unbiased estimator avoids systematic errors. This is clearly a sensible criterion, but note, it is not automatically compatible with the all estimators, for example there are examples of MLEs and MOMs which are biased (we will see some examples shortly!). 
+
+  \item For an estimator $T$ both the $\operatorname{Bias}_{\vartheta}(T)$ and $\operatorname{MSE}_{\vartheta}(T)$ depends on $\theta$, that is they are actually functions of $\theta$. This is why sometimes you will see this is explicitly written in some places, e.g.,  $\operatorname{Bias}_{T}(\vartheta)$. 
+
+  \item Also note often $T$ is an estimator of any function of $\vartheta$, e.g., $\tau{\vartheta}$. So to be more general to define unbiasedness we can write $E_{\vartheta}(T)=\tau{\vartheta} $, so it is just a matter of adjusting notations. To have less notational burden we simply used $\theta$. 
+\end{itemize}
+  
+\end{remarks}
+ 
+
+Why average squared error? In general, any increasing function of the absolute distance $|T-\vartheta|$ would serve to measure the goodness of an estimator (e.g., mean absolute error, $\mathrm{E}_{\vartheta}(|T-\vartheta|)$ is also a reasonable alternative), but MSE has at least two advantages over other distance measures: First, it is quite tractable analytically and, second, it has a relation with bias and variance, that is $\operatorname{MSE}_{\vartheta}(T) = \operatorname{Var}_{\vartheta}(T)+\operatorname{Bias}_{\vartheta}(T)$, lets see the short proof of this result. We start from the definition, apply the \emph{linearity of expectation} and the fact that $\theta$ is a constant.
+
+\begin{align*}
+\operatorname{MSE}_{\vartheta}(T) := E_{\theta}\left((T-\vartheta)^{2}\right) &=E_{\theta}\left(T^{2}\right)-2 \vartheta E_{\theta}(T)+\vartheta^{2} \\
+&=E_{\theta}\left(T^{2}\right)-\left(E_{\theta}(T)\right)^{2}+\left(E_{\theta}(T)\right)^{2}-2 \vartheta E_{\theta}(T)+\vartheta^{2} \\
+&=\operatorname{Var}_{\vartheta}(T)+\left(E_{\vartheta}(T)-\vartheta\right)^{2} \\
+&=\operatorname{Var}_{\vartheta}(T)+\operatorname{Bias}_{\vartheta}(T)
+\end{align*}
+
+In the second equality we added and subtracted a term and in the third equality we have used - for any random variable $X$, $\operatorname{Var}(X) = E(X^2) - \left(E(X)\right)^2$. This relation quickly tells us that for an unbiased estimator $\operatorname{MSE}_{\vartheta}(T) = \operatorname{Var}_{\vartheta}(T)$, that is  MSE is equal to its variance. 
+
+Now let us talk about MSE. MSE incorporates two components, first $\operatorname{Var}_{\vartheta}(T)$, that measures the variability of the estimator (a related terminology is ``precision'' which is the reciprocal of the variance) and the other is $\operatorname{Bias}_{\vartheta}(T)$, which measures (accuracy). 
+
+An estimator that has good MSE properties has small combined variance and bias. And it is a desirable property because it means we are reducing the error of our approximation. Clearly, unbiased estimators will do a good job of controlling bias, but obviously controlling bias does not guarantee that MSE is controlled because it depends also on bias. So there might be trade off in certain situations. It might be the case that sometimes a small increase in bias can be traded for a larger decrease in variance, resulting MSE to be reduced even more. Let us look at an example, where we have an biased estimator but it reaches to lower MSE than an unbiased estimator.
+
+
+\begin{example}
+Recall $S^2$ (i.e., the sample variance) which is the estimator of $\sigma^{2}$. 
+
+\begin{align*}
+  S^{2}=\frac{1}{n-1} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}
+\end{align*}
+
+We can look at an alternative estimator 
+
+\begin{align*}
+  \hat{\sigma}^{2}:=\frac{1}{n} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}=\frac{n-1}{n} S^{2}
+\end{align*}
+
+If you remember this is what we have calculated as a MOMs estimator and also as a MLE of $\sigma^{2}$. Now we can easily calculate,
+
+\begin{align*}
+  E (\hat{\sigma}^{2})=\mathrm{E}\left(\frac{n-1}{n} S^{2}\right)=\frac{n-1}{n} \sigma^{2}
+\end{align*}
+
+
+so $\hat{\sigma}^{2}$ is a biased estimator of $\sigma^{2} .$ The variance of $\hat{\sigma}^{2}$ can also be calculated as
+
+\[
+\operatorname{Var} \hat{\sigma}^{2}=\operatorname{Var}\left(\frac{n-1}{n} S^{2}\right)=\left(\frac{n-1}{n}\right)^{2} \operatorname{Var} S^{2}=\frac{2(n-1) \sigma^{4}}{n^{2}}
+\]
+
+and, hence, its MSE is given by
+
+\[
+\mathrm{E}\left(\hat{\sigma}^{2}-\sigma^{2}\right)^{2}=\frac{2(n-1) \sigma^{4}}{n^{2}}+\left(\frac{n-1}{n} \sigma^{2}-\sigma^{2}\right)^{2}=\left(\frac{2 n-1}{n^{2}}\right) \sigma^{4}
+\]
+
+We thus have
+
+\[
+\mathrm{E}\left(\hat{\sigma}^{2}-\sigma^{2}\right)^{2}=\left(\frac{2 n-1}{n^{2}}\right) \sigma^{4}<\left(\frac{2}{n-1}\right) \sigma^{4}=\mathrm{E}\left(S^{2}-\sigma^{2}\right)^{2}
+\]
+
+showing that $\hat{\sigma}^{2}$ has smaller MSE than $S^{2}$. Thus, by trading off variance for bias, the MSE is improved.
+\end{example}
+
+
+We need to quickly point out that the above example does not imply that $S^{2}$ should be abandoned as an estimator of $\sigma^{2}$. The above argument shows that, on the average, $\hat{\sigma}^{2}$ will be closer to $\sigma^{2}$ than $S^{2}$ if $\mathrm{MSE}$ is used as a measure. However note, $\hat{\sigma}^{2}$ is \emph{biased} and will, \emph{on the average underestimate} $\sigma^{2}$. This fact alone may make us uncomfortable about using $\hat{\sigma}^{2}$ as an estimator of $\sigma^{2}$. 
+
+
+% Furthermore, it can be argued that MSE, while a reasonable criterion for location parameters, is not reasonable for scale parameters, so the above comparison should not even be made. (One problem is that MSE penalizes equally for overestimation and underestimation, which is fine in the location case. In the scale case, however, 0 is a natural lower bound, so the estimation problem is not symmetric. Use of MSE in this case tends to be forgiving of underestimation.) 
+
+
+So what can we conclude? We can conclude that there is no absolute answer to obtain an estimator. But what we can do is we can gather different and perhaps more information about the estimators hoping that, for a particular situation we can use these knowledge to choose a good estimator.
+
+In general if we want to choose an estimator solely on the basis of the MSE, then we will literally have to consider all estimators in all points of $\vartheta$ in $\Theta$, and maybe choose the ``one best'' estimator using MSE. But as you can guess we have to deal with a huge class of estimators and in reality there are examples where for certain parts of $\Theta$ one estimator has lower MSE than others, and in other parts there are other estimators which have lower MSEs. So rather than comparing all possible estimators in the whole $\Theta$, we can compare two estimators compare their performance and this is what we call \emph{relative efficiency},
+
+
+\begin{definition}[Relative efficiency and admissibility]
+ Let $T$ and $T^{'}$ be two estimators of a parameter $\vartheta$. 
+\begin{itemize}
+  \item The \emph{relative efficiency}, denoted by $\operatorname{RE}_{\vartheta}\left(T, T^{'}\right)$ of $T$ with respect to $T^{'}$ is 
+
+\begin{align*}
+  \operatorname{RE}_{\vartheta}\left(T, T^{'}\right):=\frac{\operatorname{MSE}_{\vartheta}\left(T^{'}\right)}{\operatorname{MSE}_{\vartheta}(T)}=\frac{E_{\vartheta}\left(\left(T^{'}-\vartheta\right)^{2}\right)}{E_{\vartheta}\left(\left(T-\vartheta\right)^{2}\right)}, \quad \forall \vartheta \in \Theta
+\end{align*}
+
+\item $T$ is relatively more efficient than $T^{'}$ if $\operatorname{RE}_{\vartheta}\left(T, T^{'}\right) \geq 1 \forall \vartheta \in \Theta$ and $\operatorname{RE}_{\vartheta}\left(T, T^{'}\right) >1$ for some $\vartheta \in \Theta$.
+
+\item For $T$ if there exists $T^{'}$ that is relatively more efficient than $T$, then $T$ is called \emph{inadmissible} for estimating $\vartheta$. Otherwise, $T$ is called \emph{admissible}.
+
+
+\end{itemize}
+  
+\end{definition}
+
+Relative efficiency is a good criterion, but it is not uniform in the sense that it gives us an estimator for all $\vartheta$. Maybe we would like to find an estimator in a larger class, which holds for all possible $\vartheta$. As we have discussed only looking at MSE for whole $\Theta$ is not a solution. But it turns out, it is possible to narrow our search. One of the ideas is we can narrow our focus to only the class of \emph{unbiased estimators}. So pick a $\vartheta$, and then for all the estimators that you can find at $\vartheta$ pick the one which has the lowest MSE. But because it is already unbiased, lowest MSE means lowest variance. Now if we find an unbiased estimator that has lowest variance regardless of which $\vartheta$ we pick, we have indeed found solution for all $\theta$ but only in this unbiased class of estimators. We call this \emph{uniformly minimum variance unbiased estimator} or UMVUE in short. The word ``uniformly'' emphasizes that this estimator being minimum in variance for whole $\vartheta$. Here is the formal definition,
+
+
+\begin{definition}[Best unbiased estimator or UMVUE]
+An unbiased estimator $T$ of $\theta$ is called a \emph{best unbiased  estimator}, also called \emph{uniformly minimum variance unbiased estimator (UMVUE)} if 
+
+\begin{align*}
+  \operatorname{Var}_{\vartheta}(T) \leq \operatorname{Var}_{\vartheta}(T^{'}) 
+\end{align*}
+
+for any $T^{'}$ which is unbiased at any $\vartheta \in \Theta$.
+
+\end{definition}
+ 
+
+How do we go to find an UMVUE estimator, check one by one? It turns out its not an easy problem. Even if you compare any two unbiased estimators, you can then combine them to create another set of estimators, so at the end you have too many comparisons to make. Here is an example, 
+
+\begin{example}
+Let $X_{1}, \ldots, X_{n}$ be iid Poisson $(\lambda),$ and let $\bar{X}$ and $S^{2}$ be the sample mean and variance, respectively. Recall that for the Poisson pmf both the mean and variance are equal to $\lambda$, and because we know that the sample mean and variance are unbiased regardless of the distributions, so
+
+\begin{align*}
+  \mathrm{E}_{\lambda} (\bar{X})=\lambda, \quad \text { for all } \lambda \\
+  \mathrm{E}_{\lambda} (S^{2})=\lambda, \quad \text { for all } \lambda
+\end{align*}
+
+
+
+so both $\bar{X}$ and $S^{2}$ are unbiased estimators of $\lambda$ To determine the better estimator, $\bar{X}$ or $S^{2},$ we should now compare variances. In this case it is possible to show that $\operatorname{Var}_{\lambda} \left(\bar{X}\right) \leq \operatorname{Var}_{\lambda} \left( S^{2} \right)$ for all $\lambda$. So now we can establish that $\bar{X}$ is better than $S^{2}$. Now, consider the class of estimators which are convex combinations of the two, so 
+
+\begin{align*}
+  T_{a}\left(\bar{X}, S^{2}\right)=a \bar{X}+(1-a) S^{2}
+\end{align*}
+
+Now for every constant $a$ we also have $E_{\lambda} (T_{a}\left(\bar{X}, S^{2}\right))=\lambda,$ so now we have infinitely many unbiased estimators of $\lambda$. Even if $\bar{X}$ is better than $S^{2},$ is it better than every $T_{a}\left(\bar{X}, S^{2}\right)$? Furthermore, how can we be sure that there are not other, better, unbiased estimators around?
+\end{example}
+
+
+So the example suggests perhaps we need a more comprehensive approach. Here is one such approach, suppose that, for estimating a parameter $\vartheta$ of a distribution $f(x | \vartheta),$ we can specify a lower bound, say $B(\vartheta),$ on the variance of \emph{any unbiased estimator} of $\vartheta$. So if we can find an unbiased estimator $T$ satisfying $\operatorname{Var}_{\theta}(T)=B(\theta),$ we have found a UMVUE. In this approach this bound is called \emph{Cramér-Rao Lower Bound} or CRLB in short. To establish CRLB, we need some assumptions on the family of the distributions. These assumptions together are often called, \emph{regularity conditions}. 
+
+
+\begin{definition}[Regularity Conditions] A one parameter family $\left(\mathcal{X}, \mathscr{F}, \mathcal{P} \right)$, where $\mathcal{P} = \{ P_{\vartheta}: \vartheta \in \Theta \}$, is called regular if
+
+\begin{itemize}
+  \item[(r1)] $\Theta$ is an open interval on $\mathbb{R}$
+
+  \item[(r2)] The likelihood function on $\mathcal{X} \times \Theta$ is strictly positive and continuously differentiable in $\vartheta .$ So, in particular, there exists the \emph{score} function $U_{\vartheta}(x)$, where
+
+  \begin{align*}
+    U_{\vartheta}(x):=\frac{d}{d \vartheta} \log f(x, \vartheta)=\frac{f_{x}^{\prime}(\vartheta)}{f_{x}(\vartheta)}
+  \end{align*}
+
+  \item[(r3)] $f(x, \vartheta)$ allows to interchange the differentiation in $\vartheta$ and the integration over $x$
+
+  \begin{align*}
+    \int \frac{d}{d \vartheta} f(x, \vartheta) d x=\frac{d}{d \vartheta} \int f(x, \vartheta) d x
+  \end{align*}
+
+
+  \item[(r4)] For each $\vartheta \in \Theta,$ the variance $I(\vartheta):=V_{\vartheta}\left(U_{\vartheta}\right)$ exists and is non-zero. The function $I: \vartheta \rightarrow I(\vartheta)$ is then called the \emph{Fisher information} of the model.
+
+\end{itemize}
+\end{definition}
+
+
+
+
+\begin{remarks}
+
+\begin{itemize}
+  \item[]
+  \item The significance of (r3) comes when we see,
+
+\begin{align*}
+  E_{\vartheta}\left(U_{\vartheta}\right)=\int \frac{d}{d \vartheta} f(x, \vartheta) d x=\frac{d}{d \vartheta} \int f(x, \vartheta) d x=\frac{d}{d \vartheta} 1=0
+\end{align*}
+
+which says that the score function of $\vartheta$ is centered with respect to $P_{\vartheta} $. In particular,
+
+\begin{align*}
+  I(\vartheta)=\mathbb{E}_{\vartheta}\left(U_{\vartheta}^{2}\right)
+\end{align*}
+
+because $\left(E_{\vartheta}\left(U_{\vartheta}\right)\right)^2 = 0$.
+
+\end{itemize}
+  
+\end{remarks}
+
+
+\subsection{Principles}
+
+
+In this section we mention certain principles to find a good estimators. 
+
+\subsection{Sufficiency Principle} % (fold)
+~\label{sub:sufficiency}
+% subsection sufficiency (end)
+\begin{definition}[Sufficient Statistic]~\label{sufficent}
+A statistic $T(X_1, \ldots, X_n)$ is a \emph{sufficient statistic} for $\vartheta$ if the conditional distribution of the sample $X_1, \ldots, X_n$ given the value of $T(X_1, \ldots, X_n)$ does not depend on $\vartheta$.
+  
+\end{definition}
+\begin{lemma}[Sufficiency Principle]
+  If $T({X})$ is a sufficient statistic for $\vartheta,$ then any inference about $\vartheta$ should depend on the sample ${X}$ only through the value $T({X})$. That is, if ${x}$ and ${y}$ are two sample points such that $T({x})=T({y}),$ then the inference about $\vartheta$ should be the same whether ${X}={x}$ or ${X}={y}$ is observed.
+\end{lemma}
+Lets elaborate on the Definition \ref{sufficent} a bit assuming the $T(X_1, \ldots, X_n)$ has a discrete distribution. To ease the notational burden we will denote $X = (X_1, \ldots, X_n)$, so $X$ is simply a $n$ dimensional random vector and the realizations will be written as $x$. 
+
+
+\begin{myfont}
+So we are interested in conditional distribution of the sample given the value of a statistic. That is for example,  a particular value $T(X) = t$  of the statistic can result for a set of value $A_{t}=\{x: T(x)=t)\}$ from the distribution of $X$, so we will have the distribution for $P_{\vartheta}(X=x | T(X)=t)$. If $x$ is not a sample point from that set,  than $T(x) \neq t,$ then clearly $P_{\vartheta}(X=x | T(X)=t) =0$. 
+
+
+
+% Let $t$ be a possible value of $T(X),$ that is, a value such that $P_{\vartheta}(T(X)=t)>0 .$ We wish to consider the conditional probability $P_{\vartheta}(X=$ $x | T(X)=t) .$ If $x$ is a sample point such that $T(x) \neq t,$ then clearly $P_{\vartheta}(X=x | T(X)=$
+% $t)=0 .$ Thus, 
+
+Thus we can restrict our interest in $P(X=x | T(X)=T(x))$. \end{myfont} By the definition, if $T(X)$ is a sufficient statistic, this conditional probability is the same for all values of $\vartheta$ so we can omit the subscript $\vartheta$. A sufficient statistic captures all the information about $\vartheta$ in this sense. 
+
+
+Let us look at an example. Consider two statisticians,    1st-statistician observes the value of $X = x$ and can compute the value  $T(x)$, of the statistic $T(X)$ at $x$. Now consider 2nd-statistician only a value for the statistic $T(X)= T(x)$ but does not know from any sample point. 2nd-statistician knows $P(X= y | T(X)=T(x)$ which is the probability distribution on $A_{T(x)}=\{y: T(y)=T(x))\}$. This is because this can be computed from the model without knowledge of the true value of $\vartheta$ just by looking at the conditional distribution. Thus, 2nd-statistician can use this distribution to generate an observation $Y$ satisfying $P(Y=y | T(X)= T(x))=P(X=y | T(X)=T(x))$. It turns out that, for each value of $\vartheta, X$ and $Y$ we have the same unconditional probability distribution, as we shall see below. So 1st-statistician who knows $X,$ and 2nd-statistician who knows $Y$ have equivalent information about $\vartheta$. All his knowledge about $\vartheta$ is contained in the knowledge that $T(X)=T(x) .$ So 2nd-statistician  who knows only $T(X)=T(x),$ has just as much information about $\vartheta$ as does 1st-statistician , who knows the entire sample $X=x$
+
+To complete the above argument, we need to show that $X$ and $Y$ have the same unconditional distribution, that is, $P_{\vartheta}(X=x)=P_{\vartheta}(Y=x)$ for all $x$ and $\vartheta .$ Note that the events $\{X=x\}$ and $\{Y=x\}$ are both subsets of the event $\{T(X)=T(x)\}$. Also recall that
+
+\[
+P(X=x | T(X)=T(x))=P(Y=x | T(X)=T(x))
+\]
+
+and these conditional probabilities do not depend on $\vartheta .$ Thus we have
+
+\begin{align*}
+&P_{\vartheta}(X=x) \\
+&=P_{\vartheta}(X=x \operatorname{and} T(X)=T(x)) \\
+&=P(X=x | T(X)=T(x)) P_{\vartheta}(T(X)=T(x)) \quad\left(\begin{array}{c}
+\text { definition of } \\
+\text { conditional probability }
+\end{array}\right.\\
+&=P(Y=x | T(X)=T(x)) P_{\vartheta}(T(X)=T(x)) \\
+&=P_{\vartheta}(Y=x \text { and } T(X)=T(x)) \\
+&=P_{\vartheta}(Y=x)
+\end{align*}
+
+To use Definition \ref{sufficent}, to verify that a statistic $T(X)$ is a sufficient statistic for $\vartheta$, we must verify that for any fixed values of $x$ and $t,$ the conditional probability $P_{\vartheta}(X=x | T(X)=t)$ is the same for all values of $\vartheta$. Again, this probability is 0 for all values of $\vartheta$ if $T(x) \neq t$. So, we must verify only that $P_{\vartheta}(X=x | T(X)=T(x))$ does not depend on $\vartheta$. But since $\{X=x\}$ is a subset of $\{T(X)=T(x)\}$
+
+\begin{align*}
+  P_{\vartheta}(X=x | T(X)=T(x)) &=\frac{P_{\vartheta}(X=x \text { and } T(X)=T(x))}{P_{\vartheta}({T}(X)=T(x))} \\
+&=\frac{P_{\vartheta}(X=x)}{P_{\vartheta}(T(X)=T(x))} \\
+&=\frac{f(x | \vartheta)}{g(T(x) | \vartheta)}
+\end{align*}
+
+
+where $f(x | \vartheta)$ is the joint pmf of the sample $X$ and $g(t | \vartheta)$ is the pmf of $T(X)$. Thus, $T(X)$ is a sufficient statistic for $\vartheta$ if and only if, for every $x,$ the above ratio of pmfs is constant as a function of $\vartheta$ . Although we showed this for the discrete distributions, but this can be extended to continuous cases, this gives us following \textbf{lemma}
+
+\begin{lemma}
+~\label{sufficiencyRatio}
+  If $f(x | \vartheta)$ is the joint pdf or pmf of $X$ and $g(t | \vartheta)$ is the pdf or pmf of $T(X),$ then $T(X)$ is a sufficient statistic for $\vartheta$ if, for every $x$ in the sample space, the ratio $f(x | \vartheta) / g(T(x) | \vartheta)$ is constant as a function of $\vartheta$.
+\end{lemma}
+
+Now, we will verify sufficiency for two common statistics with Lemma \ref{sufficiencyRatio}.
+
+\begin{example}[Binomial sufficient statistic]
+  Let $X_{1}, \ldots, X_{n}$ be iid Bernoulli RVs with parameter $p, 0<p<1$. Then their joint pmf is given by,
+
+  \[
+    f({x} | p) := \prod_i p^{x} \cdot(1-p)^{1-x_{i}}
+  \]
+
+
+  We will show that $T{X}=\sum_{i=1}^{n} X_i = X_{1}+\cdots+X_{n}$ is a sufficient statistic for $p$. Note that $T({X})$ gives the total number of $X_{i}$'s that are 1. Therefore, $T({X})$ has a $\text{Bin}(n, p)$ distribution and the pmf is given by
+
+  \[
+    g(T({x}) | p) := \left(\begin{array}{c}
+n \\
+T(x)
+\end{array}\right) p^{T(x)}(1-p)^{n-T(x)}
+  = \left(\begin{array}{c}
+n \\
+\sum_{i=1} x_i
+\end{array}\right) p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}
+  \]
+
+The ratio of pmfs  is then
+
+\[
+\begin{aligned}
+\frac{f({x} | p)}{g(T({x}) | p)} &=\frac{\prod_i p^{x} \cdot(1-p)^{1-x_{i}}}{\left(\begin{array}{c}
+n \\
+\sum_i x_i
+\end{array}\right) p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}} \\
+&=\frac{p^{\sum_i x_{i}}(1-p)^{\sum_i \left(1-x_{i}\right)}}{\left(\begin{array}{c}
+n \\
+\sum_i x_i
+\end{array}\right) p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}} \\
+&=\frac{p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}}{\left(\begin{array}{c}
+n \\
+\sum_i x_i
+\end{array}\right) p^{\sum_i x_i}(1-p)^{n-\sum_i x_i}} \\
+&=\frac{1}{\left(\begin{array}{c}
+n \\
+\sum_i x_i
+\end{array}\right)} \\
+&=\frac{1}{\left(\begin{array}{c}
+n \\
+T(x)
+\end{array}\right)}
+\end{aligned}
+\]
+
+\end{example}
+
+Since this ratio does not depend on $\vartheta$, by Lemma \ref{sufficiencyRatio}, $T({X})$ is a sufficient statistic for $\vartheta$. The interpretation is this: The total number of 1 s in this Bernoulli sample contains all the information about $\vartheta$ that is in the data. Other features of the data, such as the exact value of $X_{2}$, contain no additional information.
+
+\begin{example}[Normal sufficient statistic]~\label{normal sufficient example}
+
+Let $X_{1}, \ldots, X_{n}$ be iid  $\mathcal{N}\left(\mu, \sigma^{2}\right)$ where $\sigma^{2}$ is known. We want to show that the sample mean, $\bar{X}=\sum_{i=1}^{n} \frac{X_i}{n}$, is a sufficient statistic for $\mu .$ The joint pdf of the sample ${X}$ is
+
+\[
+\begin{aligned}
+f({x} | \mu) &=\prod_{i=1}^{n}\left(2 \pi \sigma^{2}\right)^{-1 / 2} \exp \left(-\left(x_{i}-\mu\right)^{2} /\left(2 \sigma^{2}\right)\right) \\
+&=\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\sum_{i=1}^{n}\left(x_{i}-\mu\right)^{2} /\left(2 \sigma^{2}\right)\right)\\
+&= \left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\sum_{i=1}^{n}\left(x_{i}-\bar{x}+\bar{x}-\mu\right)^{2} /\left(2 \sigma^{2}\right)\right)\\
+&=\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\left(\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}+n(\bar{x}-\mu)^{2}\right) /\left(2 \sigma^{2}\right)\right)
+\end{aligned}
+\]
+
+
+
+The last equality is true because the cross-product term $\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)(\bar{x}-\mu)$ may be rewritten as $(\bar{x}-\mu) \sum_{i=1}^{n}\left(x_{i}-\bar{x}\right),$ and $\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)=0 .$ Recall that the sample
+mean $\bar{X}$ has a not $\left(\mu, \sigma^{2} / n\right)$ distribution with pdf
+
+\[
+g(\bar{x}|\mu) = \left(2 \pi \sigma^{2} / n\right)^{-1 / 2} \exp \left(-n(\bar{x}-\mu)^{2} /\left(2 \sigma^{2}\right)\right)
+  \]
+
+Then, the ratio of the pdfs is
+
+\begin{equation}~\label{normalratio}
+\begin{aligned}
+\frac{f(x | \mu)}{g(\bar{x} | \mu)} &=\frac{\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\left(\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}+n(\bar{x}-\mu)^{2}\right) /\left(2 \sigma^{2}\right)\right)}{\left(2 \pi \sigma^{2} / n\right)^{-1 / 2} \exp \left(-n(\bar{x}-\mu)^{2} /\left(2 \sigma^{2}\right)\right)} \\
+&=n^{-1 / 2}\left(2 \pi \sigma^{2}\right)^{-(n-1) / 2} \exp \left(-\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} /\left(2 \sigma^{2}\right)\right)
+\end{aligned}
+\end{equation}
+
+which does not depend on $\mu$. By Theorem \ref{sufficiencyRatio}, the sample mean is a sufficient statistic for $\mu$.
+
+\end{example}
+
+To find a sufficient statistic for a particular model using the definition is usually tedious. One must guess a statistic $T(X)$
+to be sufficient, find its  pmf or pdf, and check that the ratio of pdfs or pmfs does not depend ob $\vartheta$. The following theorem makes the task easier by simply allowing to find a sufficient statistic by simple inspection of the pdf or pmf of the sample. It says, if the pdf or pmƒ of $X$ can be factored into a product such that one factor, does not depend on $\vartheta$ and the other factor, which does depend on $\vartheta$, but depends on sample $X$ only through $T(X)$.
+
+\begin{theorem}[Factorization Theorem]
+Let$f({x} | \vartheta)$ be the joint pdf or pmf of a sample $X$. A statistic $T({X})$ is a sufficient statistic for $\vartheta$ if and only if there exist functions $g(t | \vartheta)$ and $h({x})$ such that, for all ${x}$ and for all $\vartheta$
+
+\begin{equation}
+~\label{factorization theorem}
+ f({x} | \vartheta)=g(T({x}) | \vartheta) h({x}) 
+\end{equation}
+
+
+\begin{proof}
+Here we give the proof only for discrete distributions. Suppose $T({X})$ is a sufficient statistic. Choose $g(t | \vartheta) = P_{\vartheta}(T({X})=t)$ and $h({x})=$ $P({X}={x} | T({X})=T({x})) .$ Because $T({X})$ is sufficient, the conditional probability defining $h({x})$ does not depend on $\vartheta .$ Thus this choice of $h({x})$ and $g(t | \vartheta)$ is legitimate, and for this choice we have
+
+\[
+\begin{aligned}
+f({x} | \vartheta) &=P_{\vartheta}({X}={x}) \\
+&=P_{\vartheta}({X}={x} \text { and } T({X})=T({x})) \\
+&=P_{\vartheta}(T({X})=T({x})) P({X}={x} | T({X})=T({x}))\quad(\text{sufficiency})\\
+&=g(T({x}) | \vartheta) h({x})
+\end{aligned} 
+\]
+
+So factorization in \eqref{factorization theorem} has been exhibited. We also see from the last two lines above that
+
+\[
+P_{\vartheta}(T({X})=T({x}))=g(T({x}) | \vartheta)
+\]
+
+so $g(T({x}) | \vartheta)$ is the pmf of $T({X})$.
+
+ Now for the other direction of the proof, we assume the factorization in \eqref{factorization theorem} exists. Let $q\left(t| \vartheta\right)$ be the pmf of $T({X})$. To show that $T({X})$ is sufficient we examine the ratio $f({x} | \vartheta) / q(T({x}) | \vartheta)$. Define $A_{T({x})}= \{y: T(y)=T(x)\}$. Then
+
+\begin{equation*}\begin{aligned}
+\frac{f(x | \vartheta)}{q(T(x) | \vartheta)} &=\frac{g(T(x) | \vartheta) h(x)}{q(T(x) | \vartheta)} \\
+&=\frac{g(T(x) | \vartheta) h(x)}{\sum_{A_{T(x)}} g(T(y) | \vartheta) h(y)} \quad \text{(definition of the pmf of } T \text{ )} \\
+&=\frac{g(T(x) | \vartheta) h(x)}{g(T(x) | \vartheta) \sum_{A_{T(x)}} h(y)} \quad \text{ (since } T \text { is constant on } A_{T(x)}\text{ )}\\
+&=\frac{h(x)}{\sum_{A_{T(x)}} h(y)}
+\end{aligned}\end{equation*}
+
+Since the ratio does not depend on $\vartheta$, by Lemma \ref{sufficiencyRatio}, $T(X)$ is a sufficient statistic for $\vartheta$.
+\end{proof}
+
+\end{theorem}
+
+The Factorization Theorem is also known as \emph{Neyman-Fisher Factorization Criterion}. To use the Factorization Theorem to find a sufficient statistic, we factor the joint pdf of the sample into two parts, with one part not depending on $\vartheta$. The part that does not depend on $\vartheta$ constitutes the $h({x})$ function. The other part, the one that depends on $\vartheta$, usually depends on the sample $x$ only through some function $T(x)$ and this function is a sufficient statistic for $\vartheta$. This is illustrated in the following example.
+
+\begin{example}[Continuation of Example \ref{normal sufficient example}]
+
+ For the normal model described earlier, we saw that the pdf could be factored as
+
+\begin{equation}~\label{eq:normalfactor}
+ \quad f({x} | \mu)=\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} /\left(2 \sigma^{2}\right)\right) \exp \left(-n(\bar{x}-\mu)^{2} /\left(2 \sigma^{2}\right)\right)  
+\end{equation}
+
+We can define
+
+\[
+h({x})=\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} /\left(2 \sigma^{2}\right)\right)
+\]
+which does not depend on the unknown parameter $\mu .$ The factor in \eqref{eq:normalfactor} that contains $\mu$ depends on the sample $x$ only through the function $T({x})=\bar{x},$ the sample mean. So we have
+
+\[
+g(t | \mu)=\exp \left(-n(t-\mu)^{2} /\left(2 \sigma^{2}\right)\right)
+\]
+and note that
+
+\[
+f({x} | \mu)=h({x}) g(T({x}) | \mu)
+\]
+
+Thus, by the Factorization Theorem, $T({X})=\bar{X}$ is a sufficient statistic for $\mu$.
+
+
+\end{example}
+
+
+In all the previous examples, the sufficient statistic is a real-valued function of the sample. All the information about $\vartheta$ in the sample $x$ is summarized in the single number $T({x})$. Sometimes, the information cannot be summarized in one number and several numbers are required instead. In such cases, a sufficient statistic is a vector, say $T({X})=\left(T_{1}({X}), \ldots, T_{r}({X})\right) .$ This situation often occurs when the parameter is also a vector, say ${\vartheta}=\left(\vartheta_{1}, \ldots, \vartheta_{s}\right)$. The Factorization Theorem may be used to find a vector-valued sufficient statistic.
+
+\begin{example}[Normal sufficient statistic, both parameters unknown]
+
+Again assume that $X_{1}, \ldots, X_{n}$ are iid $\mathcal{N}\left(\mu, \sigma^{2}\right)$ but, unlike Example \ref{normal sufficient example} assume that both $\mu$ and $\sigma^{2}$ are unknown so the parameter vector is $\vartheta = \left(\mu, \sigma^{2}\right)$. Now when we use the Factorization Theorem, any part of the joint pdf that depends on either $\mu$ or $\sigma^{2}$ must be included in the $g$ function. From \eqref{normalratio} it is clear that the pdf depends on the sample $x$ only through the two values $T_{1}(x):=\bar{x}$ and $T_{2}(x):=s^{2}=$ $\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2} /(n-1) .$ Thus we can define $h({x})=1$ and
+
+\[
+\begin{aligned}
+g({t} | \theta) &=g\left(t_{1}, t_{2} | \mu, \sigma^{2}\right) \\
+&=\left(2 \pi \sigma^{2}\right)^{-n / 2} \exp \left(-\left(n\left(t_{1}-\mu\right)^{2}+(n-1) t_{2}\right) /\left(2 \sigma^{2}\right)\right)
+\end{aligned}
+\]
+
+Then it can be seen that
+
+\[
+\quad f\left({x} | \mu, \sigma^{2}\right)=g\left(T_{1}({x}), T_{2}({x}) | \mu, \sigma^{2}\right) h({x})
+\]
+
+Thus, by the Factorization Theorem, $T({X})=\left(T_{1}({X}), T_{2}({X})\right)=\left(\bar{X}, S^{2}\right)$ is a sufficient statistic for $\left(\mu, \sigma^{2}\right)$ in this normal model.
+
+\end{example}
+
+
+\begin{definition}[Complete Statistic]
+Let $T({X})$ be a statistic with a family of pdfs or pmfs of $f(t | \vartheta)$ indexed by  $\vartheta\in\Theta$. If the condition, ${E}_{\vartheta} (g(T))=0$ for all $\vartheta\in\Theta$, implies $P_{\vartheta}(g(T)=0)=1$ for all $\vartheta\in\Theta$, then the family $f(t | \vartheta)$,  $\vartheta\in\Theta$ is called a \emph{complete family of pdfs or pmfs} and $T({X})$ is called a \emph{complete statistic}.
+\end{definition}
+
+Notice that completeness is a property of a family of probability distributions, 
+not of a particular distribution. For example, if $T(X)$ has a $\mathcal{N}(0,1)$
+ distribution, then defining $g(t)=t,$ we have that $E(g(T(X)))=E(T(X))=0$. But the function $g(t)=t$ satisfies $P(g(T(X))=0)=P(T(X)=0)=0,$ not $1$. However, this should not give the idea that the pdf is not complete because this is a particular pdf, not a family of pdfs. If $X$ has a  $\mathcal{N}(\vartheta, 1)$ distribution, $-\infty<\vartheta<\infty,$ we shall see that \textbf{no function of $X$, except one that is 0 with probability 1 for all $\vartheta$}, satisfies ${E}_{\vartheta} (g(X))=0$ for all $\vartheta$. Thus, the family of $\mathcal{N}(\vartheta, 1)$ distributions, $-\infty<\vartheta<\infty,$ is complete.
+
+\begin{example}[Binomial complete sufficient statistic]
+
+Suppose that has $T$ a $\text{Bin}(n, p)$ distribution, $0 < p < 1$. Let $g$ be a function such that $E_{p} (g(T))=0$.
+
+Then
+
+\[
+\begin{aligned}
+0=E_{p} (g(T)) &=\sum_{t=0}^{n} g(t)\left(\begin{array}{c}
+n \\
+t
+\end{array}\right) p^{t}(1-p)^{n-t} \\
+&=(1-p)^{n} \sum_{t=0}^{n} g(t)\left(\begin{array}{c}
+n \\
+t
+\end{array}\right)\left(\frac{p}{1-p}\right)^{t}
+\end{aligned}
+\]
+for all $p, 0<p<1$. The factor $(1-p)^{n}$ is not 0 for any $p$ in this range. Thus it must be that
+
+\[
+0=\sum_{t=0}^{n} g(t)\left(\begin{array}{c}
+n \\
+t
+\end{array}\right)\left(\frac{p}{1-p}\right)^{t}=\sum_{t=0}^{n} g(t)\left(\begin{array}{c}
+n \\
+t
+\end{array}\right) r^{t}
+\]
+
+for all $r, 0<r<\infty .$ But the last expression is a polynomial of degree $n$ in $r,$ where the coefficient of $r^{t}$ is $g(t)\left(\begin{array}{c}n \\ t\end{array}\right) .$ For the polynomial to be 0 for all $r,$ each coefficient must be
+0. since none of the $\left(\begin{array}{c}n \\ t\end{array}\right)$ terms is $0,$ this implies that $g(t)=0$ for $t=0,1, \ldots, n .$ since $T$ takes on the values $0,1, \ldots, n$ with probability $1,$ this yields that $P_{p}(g(T)=0)=1$ for all $p,$ the desired conclusion. Hence, $T$ is a complete statistic.
+\end{example}
+
+\begin{example}[Completeness of Normal with known Mean and Unknown variance]
+
+\begin{myfont}
+ !!! This example is from old handout!!! 
+\end{myfont}
+Given is the family of  distributions $\mathcal{N}(\mu_0, \sigma^2)$ indexed by $\sigma^2 \in \R^+$ with known mean $\mu_0 \in \R$. Let $X \sim N(\mu_0, \sigma^2)$. Select $h(X) = X - \mu_0$, then the following applies
+
+\begin{align*}
+E_{\sigma^2}(h(X)) = E_{\sigma^2}(X - \mu_0) = E_{\sigma^2}(X) - \mu_0 = \mu_0 - \mu_0 = 0.
+\end{align*}
+However, this results in
+
+\begin{align*}
+P_{\sigma^2}(H(X) = 0) = P_{\sigma^2}(X = \mu_0) = 0,
+\end{align*}
+because $X$ is a constant random variable.
+
+The family of densities of the normal distribution with known expected value and unknown variance is therefore not complete.
+\end{example}
+
+
+
+\subsection{Asymptotic Considerations}
+
+
+
+\begin{definition}[Asymptotically unbiased]
+Let $\{\{\TX\}_n$, $n \in \N$,be  a sequence of point estimators. It's called \emph{asymptotically unbiased} estimator of $\vt$, if it holds
+
+\begin{align*}
+    \lim_{n \to \infty} \E_{\vt}(\TX) = \vt.
+\end{align*}
+
+The expected value thus converges  to the true parameter value for $n \to \infty$.
+\end{definition}
+
+\end{document}

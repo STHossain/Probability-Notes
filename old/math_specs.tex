@@ -1,0 +1,510 @@
+%!TEX root = handout_precourse.tex
+
+
+% side rules for theorem environment
+
+
+\newmdenv[
+  nobreak = true,
+  linewidth=.3pt,
+  linecolor=gray!80!white,
+  topline=false,
+  bottomline=false,
+  leftmargin=0pt, 
+  innerleftmargin=0.4em, 
+  rightmargin=0pt, 
+  innerrightmargin=0pt, 
+  innertopmargin=-5pt ,
+  innerbottommargin=3pt, 
+  splittopskip=\topskip, 
+  splitbottomskip=0.3\topskip,
+  backgroundcolor=white!4,
+  rightline=false,
+]{siderules}
+
+
+\newmdenv[
+  nobreak = true,
+  linewidth=.3pt,
+  linecolor=black!80!white,
+  topline=false,
+  bottomline=false,
+  leftmargin=0pt, 
+  innerleftmargin=0.4em, 
+  rightmargin=0pt, 
+  innerrightmargin=0pt, 
+  innertopmargin=-5pt ,
+  innerbottommargin=3pt, 
+  splittopskip=\topskip, 
+  splitbottomskip=0.3\topskip,
+  backgroundcolor= gray!5!white,
+  rightline=false,
+]{siderules2}
+
+
+
+%Theorem, Corollary, Proposition, Lemma
+
+\newtheoremstyle{theostyle}
+  {} % Space above
+  {} % Space below
+  {} % Body font
+  {} % Indent amount
+  {{\hspace{-.2cm} \color{red!30!black!}\ding{69}}~\itshape\bfseries\color{red!30!black!}} % Theorem head font
+  {.} % Punctuation after theorem head
+  {.5em} % Space after theorem head
+  {} % Theorem head spec (can be left empty, meaning `normal')
+\theoremstyle{theostyle} 
+\newtheorem{theorem}{Theorem}[chapter] %%% changed
+\newtheorem*{theorem*}{Theorem} %%% changed
+\newtheorem{corollary}{Corollary}[chapter] %%% changed
+\newtheorem{proposition}{Proposition}[chapter] %%% changed
+\newtheorem{lemma}{Lemma}[chapter] %% chaged
+% \newtheorem{hyp}[theorem]{Hypothesis} %%% changed
+
+%--------------------------------
+
+%Defintion, Assumptions
+
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\newtheoremstyle{defnstyle}
+  {} % Space above
+  {} % Space below
+  {} % Body font
+  {} % Indent amount
+  {{\hspace{-.2cm} \color{darkblue!40!black}\ding{118}}~\itshape\bfseries\color{darkblue!40!black}} %  head font
+  {.} % Punctuation after  head
+  {.5em} % Space after head
+  {} %  head spec (can be left empty, meaning `normal')
+\theoremstyle{defnstyle} 
+\newtheorem{definition}{Definition}[chapter] 
+\newtheorem{assump}[theorem]{Assumption} 
+
+
+% Examples,
+\definecolor{darkgoldenrod}{rgb}{0.72, 0.53, 0.04}
+\newtheoremstyle{exmstyle}
+  {} % Space above
+  {} % Space below
+  {} % Body font
+  {} % Indent amount
+  {{\hspace{-.1cm}\color{darkgoldenrod!60!black} \ding{168}}~\bfseries\color{darkgoldenrod!60!black}} %  head font
+  {.} % Punctuation after  head
+  {.5em} % Space after head
+  {} %  head spec (can be left empty, meaning `normal')
+\theoremstyle{exmstyle}
+\newtheorem{example}{Example}[chapter] %%% changed
+
+% Remark, Remarks,
+  \definecolor{glaucous}{rgb}{0.38, 0.51, 0.71}
+\newtheoremstyle{remstyle}
+  {} % Space above
+  {} % Space below
+  {} % Body font
+  {} % Indent amount
+  {{\hspace{-.55cm}  \color{glaucous!30!black} \ding{46}}~\bfseries\color{glaucous!30!black}} %  head font
+  {.} % Punctuation after  head
+  {.5em} % Space after head
+  {} %  head spec (can be left empty, meaning `normal')
+\theoremstyle{remstyle}
+\newtheorem{remark}{Remark}[chapter] %%% changed
+\newtheorem{remarks}{Remarks}[chapter] %%% changed
+
+
+
+% \newtheorem*{theorem*}{Theorem}
+\newtheorem*{claim}{Claim}
+
+%notation
+
+\newtheoremstyle{notation}
+  {} % Space above
+  {} % Space below
+  {} % Body font
+  {} % Indent amount
+  {{\hspace{-.75cm}  \color{gray!10!black!} \lhdbend}~\bfseries\color{gray!80!black!}} %  head font
+  {:} % Punctuation after  head
+  {.5em} % Space after head
+  {} %  head spec (can be left empty, meaning `normal')
+\theoremstyle{notation}
+\newtheorem*{notation}{{Notes on notations}}
+
+
+\AtBeginEnvironment{theorem}{\begin{minipage}{\textwidth}\noindent\vspace*{.2cm}}
+\AtEndEnvironment{theorem}{\end{minipage}\vspace*{0cm}\flushright \color{red!30!black!}\textminus\textminus\textminus \ding{69}  }
+
+\AtBeginEnvironment{lemma}{\begin{minipage}{\textwidth}\vspace*{.3cm}}
+\AtEndEnvironment{lemma}{\end{minipage}\vspace*{.3cm}}
+
+\AtBeginEnvironment{definition}{\begin{minipage}{\textwidth}\noindent\vspace*{.2cm}}
+\AtEndEnvironment{definition}{\end{minipage}\vspace*{0cm}\flushright \color{darkblue!40!black}\textminus\textminus\textminus \ding{118} }
+
+
+
+
+% \AtBeginEnvironment{assumption_n}{\begin{minipage}{\textwidth}\vspace*{.3cm}}
+% \AtEndEnvironment{assumption_n}{\vspace*{-27pt}\flushright{\trpslash}\end{minipage}\vspace*{.3cm}}
+
+% \AtBeginEnvironment{assumption}{\begin{minipage}{\textwidth}\vspace*{.3cm}}
+% \AtEndEnvironment{assumption}{\vspace*{-27pt}\flushright{\trpslash}\end{minipage}\vspace*{.3cm}}
+
+% \AtBeginEnvironment{example}{\vspace*{.3cm}}
+\AtEndEnvironment{example}{\color{darkgoldenrod!60!black!} \flushright{\textit{(...end of example!)}}}
+
+
+%% numbering of theorems
+
+
+
+% changing the numbering of theorem and equations
+% \numberwithin{section}{chapter}
+% \numberwithin{equation}{chapter}
+% \counterwithin{equation}{chapter}
+
+
+% color brackets
+\makeatletter
+\newcount\bracketnum
+\newcommand\makecolorlist[1]{%
+    \bracketnum0\relax
+    \makecolorlist@#1,.%
+    \bracketnum0\relax
+}
+\def\makecolorlist@#1,{%
+    \advance\bracketnum1\relax
+    \expandafter\def\csname bracketcolor\the\bracketnum\endcsname{\color{#1}}%
+    \@ifnextchar.{\@gobble}{\makecolorlist@}%
+}
+\let\oldleft\left
+\let\oldright\right
+\def\left#1{%
+    \global\advance\bracketnum1\relax 
+    \colorlet{temp}{.}%
+    \csname bracketcolor\the\bracketnum\endcsname
+    \oldleft#1%
+    \color{temp}%
+}
+\def\right#1{%
+    \colorlet{temp}{.}%
+    \csname bracketcolor\the\bracketnum\endcsname
+    \oldright#1%
+    \global\advance\bracketnum-1\relax
+    \color{temp}%
+}
+\makeatother
+
+
+\makecolorlist{black,blue,red}
+
+
+
+
+% 2 independent signs
+
+% indep one
+\newcommand{\indep}{\raisebox{0.05em}{\,\rotatebox[origin=c]{90}{\mbox{\Large$\models$}} \,} }
+\newcommand{\indepG}{{\indep}_{\mbox{\tiny$\mkern-18mu\mathcal{G}$}}}
+
+% independent one
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\mbox{\Large$\perp$}}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\newcommand{\independentG}{{\independent}_{\mbox{\scriptsize$\mkern-6mu\mathcal{G}$}}}
+
+% argmin, argmax
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+% combination notation
+
+\newcommand\Myperm[2][^n]{\prescript{#1\mkern-2.5mu}{}P_{#2}}
+\newcommand\Mycomb[2][^n]{\prescript{#1\mkern-0.5mu}{}C_{#2}}
+
+
+
+
+% distributed as
+\makeatletter
+\newcommand{\distas}[1]{\mathbin{\overset{#1}{\kern\z@\sim}}}%
+\newsavebox{\mybox}\newsavebox{\mysim}
+\newcommand{\distras}[1]{%
+  \savebox{\mybox}{\hbox{\kern3pt$\scriptstyle#1$\kern3pt}}%
+  \savebox{\mysim}{\hbox{$\sim$}}%
+  \mathbin{\overset{#1}{\kern\z@\resizebox{\wd\mybox}{\ht\mysim}{$\sim$}}}%
+}
+\makeatother
+
+
+% tikz
+
+\pgfarrowsdeclare{my to}{my to}
+{
+  \pgfarrowsleftextend{-2\pgflinewidth}
+  \pgfarrowsrightextend{\pgflinewidth}
+}
+{
+  \pgfsetlinewidth{1.4\pgflinewidth}
+  \pgfsetdash{}{0pt}
+  \pgfsetroundcap
+  \pgfsetroundjoin
+  \pgfpathmoveto{\pgfpoint{-5.5\pgflinewidth}{7.5\pgflinewidth}}
+  \pgfpathcurveto
+  {\pgfpoint{-4.0\pgflinewidth}{0.1\pgflinewidth}}
+  {\pgfpoint{0pt}{0.25\pgflinewidth}}
+  {\pgfpoint{0.75\pgflinewidth}{0pt}}
+  \pgfpathcurveto
+  {\pgfpoint{0pt}{-0.25\pgflinewidth}}
+  {\pgfpoint{-4.0\pgflinewidth}{-0.1\pgflinewidth}}
+  {\pgfpoint{-5.5\pgflinewidth}{-7.5\pgflinewidth}}
+  \pgfusepathqstroke
+}
+
+
+\newcommand{\asymcloud}[2][.1]{%
+\begin{scope}[#2]
+\pgftransformscale{#1}%    
+\pgfpathmoveto{\pgfpoint{261 pt}{115 pt}} 
+  \pgfpathcurveto{\pgfqpoint{70 pt}{107 pt}}
+                 {\pgfqpoint{137 pt}{291 pt}}
+                 {\pgfqpoint{260 pt}{273 pt}} 
+  \pgfpathcurveto{\pgfqpoint{78 pt}{382 pt}}
+                 {\pgfqpoint{381 pt}{445 pt}}
+                 {\pgfqpoint{412 pt}{410 pt}}
+  \pgfpathcurveto{\pgfqpoint{577 pt}{587 pt}}
+                 {\pgfqpoint{698 pt}{488 pt}}
+                 {\pgfqpoint{685 pt}{366 pt}}
+  \pgfpathcurveto{\pgfqpoint{840 pt}{192 pt}}
+                 {\pgfqpoint{610 pt}{157 pt}}
+                 {\pgfqpoint{610 pt}{157 pt}}
+  \pgfpathcurveto{\pgfqpoint{531 pt}{39 pt}}
+                 {\pgfqpoint{298 pt}{51 pt}}
+                 {\pgfqpoint{261 pt}{115 pt}}
+\pgfusepath{fill,stroke}         
+\end{scope}}  
+
+
+%
+\def\FunctionF(#1){(#1)^3- 3*(#1)}%
+
+% \tikzset{-{{To}[length=1.3mm,line width=1.3pt]}, auto, 
+%     state/.style ={circle, draw, minimum width = 0.1 cm, scale=0.9},
+%     point/.style = {circle, draw, inner sep=0.02cm,fill,node contents={}},
+%     bidirected/.style={Latex-Latex,dashed},
+%     hidden/.style={dashed}
+%     }
+
+\newcommand{\tikzl}[1]{{\begin{tikzpicture}#1\end{tikzpicture}}}
+
+\newcommand{\tikzm}[1]{\footnotesize{\begin{tikzpicture}#1\end{tikzpicture}}}
+
+
+% qed symbol
+\renewcommand{\qedsymbol}{\rule{0.4em}{0.4em}}
+
+
+\newcommand{\trpslash}{\textcolor{green!35!black}{\textbackslash\hspace{-.15cm}\textbackslash\hspace{-.15cm}\textbackslash   }}
+
+\newcommand{\lgreen}{green!15!white}
+
+%writing hand
+
+\newcommand\Writinghand{{\fontfamily{mvs}\fontencoding{U}\selectfont\char98}}
+
+
+
+%% argmin
+\DeclareMathOperator*{\argminNS}{argmin}  
+\DeclareMathOperator*{\argmaxNS}{argmin}  
+
+
+%--------------------- added by Maxime
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Theromstil anpassen
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \declaretheoremstyle[
+% spaceabove = \topsep,
+% spacebelow = \topsep,
+% headfont = \normalfont\bfseries,
+% bodyfont = \normalfont,
+% headindent = \parindent,
+% postheadspace = \newline,
+% headpunct = {}]{definition}
+
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\blacktriangle$]{definition}
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\blacksquare$]{theorem}
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\blacktriangledown$]{comment}
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\bigstar$]{example}
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\blacksquare$]{korollar}
+% \declaretheorem[style = definition, numberwithin = chapter, qed = $\blacksquare$]{lemma}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%% Further definitions %%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+
+\newfont{\suet}{suet14 at 20pt}
+%
+%\renewcommand{\labelenumi}{\alph{enumi})}
+%
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Com}{\mathbb{C}}
+
+\newcommand{\Cov}{\text{Cov}}
+\newcommand{\Cor}{\text{Cor}}
+\newcommand{\E}{\text{E}}
+\newcommand{\Var}{\text{Var}}
+\newcommand{\Bias}{\text{Bias}}
+\newcommand{\MSE}{\text{MSE}}
+\newcommand{\FI}{\text{FI}}
+\newcommand{\KI}{\text{KI}}
+\newcommand{\LQ}{\text{LQ}}
+\newcommand{\SXY}{\text{SXY}}
+\newcommand{\SSX}{\text{SSX}}
+\newcommand{\SSA}{\text{SSA}}
+\newcommand{\SSB}{\text{SSB}}
+\newcommand{\SSE}{\text{SSE}}
+\newcommand{\SSG}{\text{SSG}}
+\newcommand{\SST}{\text{SST}}
+\newcommand{\MSA}{\text{MSA}}
+\newcommand{\MSB}{\text{MSB}}
+\newcommand{\MST}{\text{MST}}
+
+\newcommand{\sign}{\text{sign}}
+\newcommand{\Rang}{\text{Rang}}
+
+%
+%\newcommand{\fX}{\mathfrak{X}}
+%\newcommand{\fM}{\mathfrak{M}}
+%\newcommand{\fA}{\mathfrak{A}}
+%\newcommand{\fE}{\mathfrak{E}}
+%\newcommand{\fC}{\mathfrak{C}}
+%
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\Ahr}{\tilde{\mathcal{A}}_r}
+%
+\newcommand{\sB}{\mbox{\suet B}}
+\newcommand{\sE}{\mbox{\suet E}}
+\newcommand{\sA}{\mbox{\suet A}}
+\newcommand{\sC}{\mbox{\suet C}}
+\newcommand{\sF}{\mbox{\suet F}}
+\newcommand{\sX}{\mbox{\suet X}}
+\newcommand{\sD}{\mbox{\suet D}}
+%
+%\newcommand{\ccA}{{\cal A}}
+%\newcommand{\ccC}{{\cal C}}
+%\newcommand{\ccL}{{\cal L}}
+%
+%
+\newcommand{\Ra}{\Rightarrow}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\LRa}{\Leftrightarrow}
+\newcommand{\es}{\emptyset}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\oA}{\overline{A}}
+\newcommand{\oB}{\overline{B}}
+\newcommand{\sm}{\setminus}
+%
+\newcommand{\wraum}{\mbox{$(\Omega,\cA,P)$ }}
+%
+%\newcommand{\dX}{\mbox{\bf X}}
+%\newcommand{\dI}{\mbox{\bf I}}
+%\newcommand{\dA}{\mbox{\bf A}}
+%\newcommand{\dY}{\mbox{\bf Y}}
+%\newcommand{\dB}{\mbox{\bf B}}
+%\newcommand{\dM}{\mbox{\bf M}}
+%\newcommand{\va}{\mbox{\bf a}}
+%
+\newcommand{\vmu}{\mbox{\boldmath{$\mu$}}}
+\newcommand{\vL}{\mbox{\boldmath{$\Lambda$}}}
+\newcommand{\vx}{\mbox{\boldmath{$x$}}}
+\newcommand{\vX}{\mbox{\boldmath{$X$}}}
+\newcommand{\vbeta}{\mbox{\boldmath{$\beta$}}}
+
+%
+%\newcommand{\ta}{\tilde{a}}
+%\newcommand{\tb}{\tilde{b}}
+%
+% \newcommand{\norm}{\mathcal{N}(\mu,\sigma^2)}
+% \newcommand{\snorm}{\mathcal{N}(0,1)}
+% \newcommand{\Pfolge}{(P_n:n\in \N)\subset \cP}
+% \newcommand{\Xfolge}{X_1,\hdots , X_n}
+% \newcommand{\konv}{\overset{n\ra \infty}{\longrightarrow}}
+%\newcommand{\statraum}{\mbox{$(\X,\sX,\cP)$ }}
+%
+%
+\newcommand{\bfA}{\textbf{A}}
+\newcommand{\bfB}{\textbf{B}}
+\newcommand{\bfC}{\textbf{C}}
+\newcommand{\bfc}{\textbf{c}}
+\newcommand{\bfe}{\textbf{e}}
+\newcommand{\bfI}{\textbf{I}}
+\newcommand{\bfV}{\textbf{V}}
+\newcommand{\bfW}{\textbf{W}}
+\newcommand{\bfX}{\textbf{X}}
+\newcommand{\bfx}{\textbf{x}}
+\newcommand{\bfY}{\textbf{Y}}
+\newcommand{\bfy}{\textbf{y}}
+
+%
+%
+\newcommand{\ld}{\lambda} 
+%\newcommand{\om}{\omega}
+\newcommand{\vt}{\vartheta}
+\newcommand{\Tt}{\Theta}
+\newcommand{\vp}{\varphi}
+\newcommand{\eps}{\epsilon}
+\newcommand{\tr}{\text{tr}}
+%
+%\newcommand{\ud}{\underline}
+%
+%\newcommand{\bi}{\begin{itemize}}
+%\newcommand{\ei}{\end{itemize}}
+%\newcommand{\ba}{\begin{align*}}
+%\newcommand{\eal}{\end{align*}}
+%\newcommand{\ben}{\begin{enumerate}}
+%\newcommand{\een}{\end{enumerate}}
+%
+%
+\newcommand{\Xis}{X_1, ..., X_n}
+\newcommand{\xis}{x_1, ..., x_n}
+\newcommand{\TX}{T_{\vt}(X_1, ..., X_n)}
+\newcommand{\TsX}{T_{\vt}'(X_1, ..., X_n)}
+\newcommand{\TssX}{T_{\vt}''(X_1, ..., X_n)}
+\newcommand{\TstX}{T_{\vt}^*(X_1, ..., X_n)}
+\newcommand{\vts}{\vt_1, ..., \vt_k}
+
+\newcommand{\dx}{\mathrm{d}x}
+\newcommand{\dy}{\mathrm{d}y}
+
+
+%align space
+
+\newcommand{\zerodisplayskips}{%
+  \setlength{\abovedisplayskip}{-10pt}%
+  \setlength{\belowdisplayskip}{8pt}%
+  \setlength{\abovedisplayshortskip}{0pt}%
+  \setlength{\belowdisplayshortskip}{0pt}}
+\appto{\normalsize}{\zerodisplayskips}
+\appto{\small}{\zerodisplayskips}
+\appto{\footnotesize}{\zerodisplayskips}
